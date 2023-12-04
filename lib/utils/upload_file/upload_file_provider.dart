@@ -1,6 +1,7 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:video_player/video_player.dart';
 
 final uploadFileProvider = Provider((ref) => UploadFile());
 
@@ -12,6 +13,7 @@ class UploadFile{
     if (formatUno == 1) {
       if (targetedSourceUno == 1) {
         fileData = await _picker.pickVideo(source: ImageSource.gallery);
+
       } else if (targetedSourceUno == 2) {
         fileData = await _picker.pickVideo(source: ImageSource.camera);
       }
