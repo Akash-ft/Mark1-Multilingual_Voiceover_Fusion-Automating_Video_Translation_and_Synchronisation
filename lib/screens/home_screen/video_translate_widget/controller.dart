@@ -4,21 +4,24 @@ import 'package:chewie/chewie.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:video_player/video_player.dart';
 
+import '../../../utils/FFmpeg_tools/FFmpeg_tool_provider.dart';
 import '../../../utils/upload_file/upload_file_provider.dart';
 
 final videoTranslateSProvider = StateNotifierProvider.autoDispose<
         VideoTranslateScreenController, VideoTranslateScreenState>(
     (ref) => VideoTranslateScreenController(
           ref.read(uploadFileProvider),
+          ref.read(FFmpegToolProvider)
         ));
 
 class VideoTranslateScreenController
     extends StateNotifier<VideoTranslateScreenState> {
   VideoTranslateScreenController(
-    this.upload,
-    // this.videoPlayerController
+    this.uploadFile,
+      this.ffmpegTools,
   ) : super(VideoTranslateScreenState.empty());
-  UploadFile upload;
+  UploadFile uploadFile;
+  FFmpegTools ffmpegTools;
 
   // final VideoPlayerController? videoPlayerController;
 
@@ -27,11 +30,20 @@ class VideoTranslateScreenController
   // late VideoPlayerController videoPlayerController;
   // ChewieController? chewieController;
 
-  Future<void> pickedFile(int target, int format) async {
-    var file = await upload.pickFileData(target, format);
+  Future<void> pickVideoFile(int target, int format) async {
+    var file = await uploadFile.pickFileData(target, format);
     print("File path ${file.path}");
-    if (file.path != null) {
-      state = state.copyWith(videoFilePath: file.path, isSuccess: true);
+    if (file.path != "") {
+      state = state.copyWith(videoFilePath: file.path, isSuccess: true,);
+    }
+  }
+
+  Future<void> extractAudio(String videoFile) async{
+    File vFile = File(state.videoFilePath!);
+    var file =await ffmpegTools.extractAudioFromVideo(vFile);
+    print("extract audio file path ${file}");
+    if(file != ""){
+      state = state.copyWith(audioFilePath: file,isSuccess: true);
     }
   }
 

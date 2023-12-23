@@ -44,6 +44,8 @@ dependencies:
   record: ^5.0.1
   chewie: ^1.7.4
   video_player: ^2.8.1
+  ffmpeg_kit_flutter: ^6.0.3
+  path_provider: ^2.1.1
 
 
 

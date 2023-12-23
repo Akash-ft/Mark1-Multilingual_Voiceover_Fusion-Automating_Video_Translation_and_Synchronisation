@@ -96,7 +96,8 @@ class _VideoTranslateWidgetState extends ConsumerState<VideoTranslateWidget> {
         ),
         ElevatedButton(
             onPressed: () async {
-              await ref.read(videoTranslateSProvider.notifier).pickedFile(1, 1);
+              await ref.read(videoTranslateSProvider.notifier).pickVideoFile(1, 1);
+              await ref.read(videoTranslateSProvider.notifier).extractAudio(state.videoFilePath!);
               // var file = await ref.read(uploadFileProvider).pickFileData(1, 1);
               // print("Upload video Gallery Selected file path: ${file.path}");
               // ref
@@ -110,7 +111,8 @@ class _VideoTranslateWidgetState extends ConsumerState<VideoTranslateWidget> {
         ),
         ElevatedButton(
             onPressed: () async {
-             await ref.read(videoTranslateSProvider.notifier).pickedFile(2, 1);
+             await ref.read(videoTranslateSProvider.notifier).pickVideoFile(2, 1);
+             await ref.read(videoTranslateSProvider.notifier).extractAudio(state.videoFilePath!);
               // var file = await ref.read(uploadFileProvider).pickFileData(2, 1);
               // print("Record video on Camera Selected file path: ${file.path}");
               // ref
@@ -144,9 +146,9 @@ class _VideoTranslateWidgetState extends ConsumerState<VideoTranslateWidget> {
             .initializeVideoPlayer(next.videoFilePath!);
       }
       // else {
-      //   if (next.errorMessage != null) {
+      //   if (next.message != null) {
       //     showMessageDialog(
-      //         context: context, title: "Error", message: next.errorMessage!);
+      //         context: context, title: "Error", message: next.message!);
       //   }
       // }
     });

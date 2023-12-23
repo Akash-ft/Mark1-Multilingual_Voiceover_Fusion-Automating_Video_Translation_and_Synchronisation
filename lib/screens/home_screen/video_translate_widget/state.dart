@@ -10,7 +10,7 @@ class VideoTranslateScreenState {
   final bool? isSuccess;
   final bool? isFail;
   final bool? isLoading;
-  final String? erorrMSg;
+  final String? message;
 
   VideoTranslateScreenState(
       {this.videoFilePath,
@@ -19,7 +19,7 @@ class VideoTranslateScreenState {
       this.chewieController,
       this.isSuccess,
       this.isFail,
-      this.erorrMSg,
+      this.message,
       this.isLoading});
 
   factory VideoTranslateScreenState.empty() {
@@ -28,7 +28,7 @@ class VideoTranslateScreenState {
         audioFilePath: "",
         videoPlayerController: null,
         chewieController: null,
-        erorrMSg: "",
+        message: "",
         isFail: false,
         isSuccess: false,
         isLoading: false);
@@ -42,7 +42,7 @@ class VideoTranslateScreenState {
     final bool? isSuccess,
     final bool? isFail,
     final bool? isLoading,
-    final String? erorrMSg,
+    final String? message,
   }) {
     return VideoTranslateScreenState(
         videoFilePath: videoFilePath ?? this.videoFilePath,
@@ -50,7 +50,7 @@ class VideoTranslateScreenState {
         videoPlayerController:
             videoPlayerController ?? this.videoPlayerController,
         chewieController: chewieController ?? this.chewieController,
-        erorrMSg: erorrMSg ?? this.erorrMSg,
+        message: message ?? this.message,
         isFail: isFail ?? this.isFail,
         isSuccess: isSuccess ?? this.isSuccess,
         isLoading: isLoading ?? this.isLoading);
