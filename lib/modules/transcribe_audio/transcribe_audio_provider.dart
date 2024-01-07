@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:b_native/app_settings/token.dart';
+import 'package:b_native/app_settings/app_key.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:dart_openai/dart_openai.dart';
 
@@ -14,7 +14,7 @@ class TranscribeAudio {
     try {
       _initializeOpenAI();
       File audioFilePath = File(audioFile);
-      print("OpenAi path ${audioFilePath}");
+      print("Transcribe Audio Ai path ${audioFilePath}");
       OpenAIAudioModel transcription =
           await OpenAI.instance.audio.createTranslation(
         file: audioFilePath,
@@ -23,7 +23,7 @@ class TranscribeAudio {
       );
       return transcription.text;
     } catch (e) {
-      print("open Error: $e");
+      print("Error Transcribe Audio Ai: $e");
       return "";
     }
   }

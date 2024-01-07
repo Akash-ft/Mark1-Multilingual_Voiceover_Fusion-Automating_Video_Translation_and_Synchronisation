@@ -2,6 +2,7 @@ import 'package:b_native/screens/home_screen/video_translate_widget/state.dart';
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import '../../../utils/reusable_widgets/alert_message.dart';
 import 'controller.dart';
 
 class VideoTranslateWidget extends ConsumerStatefulWidget {
@@ -78,7 +79,7 @@ class _VideoTranslateWidgetState extends ConsumerState<VideoTranslateWidget> {
             onPressed: () {
               ref
                   .read(videoTranslateSProvider.notifier)
-                  .swtichTab(state.tabIndex == 0 ? 1 : 0);
+                  .switchTab(state.tabIndex == 0 ? 1 : 0);
             },
             icon: Icon(
               Icons.swap_horizontal_circle,
@@ -106,13 +107,25 @@ class _VideoTranslateWidgetState extends ConsumerState<VideoTranslateWidget> {
                 Center(
                     child: state.isLoadingTranscription == true
                         ? CircularProgressIndicator()
-                        : state.translatedText == ""
+                        : state.transcriptedText == ""
                             ? Icon(
                                 Icons.task_rounded,
                                 size: 30,
                               )
                             : SingleChildScrollView(
-                                child: Text(state.transcriptedText!))),
+                                child: Container(
+                                    width: 400,
+                                    child: Text(state.transcriptedText!)))),
+                SizedBox(
+                  height: 30,
+                ),
+                IconButton(
+                    onPressed: () async {
+                      await ref
+                          .read(videoTranslateSProvider.notifier)
+                          .readText(state.transcriptedText!, "en");
+                    },
+                    icon: Icon(Icons.play_circle, size: 50))
               ],
             )),
             Container(
@@ -137,9 +150,8 @@ class _VideoTranslateWidgetState extends ConsumerState<VideoTranslateWidget> {
                         if (value != null && value.isNotEmpty) {
                           ref
                               .read(videoTranslateSProvider.notifier)
-                              .setLanguage(value!);
+                              .setLanguage(value);
                         }
-                        ;
                       },
                       items: const [
                         DropdownMenuItem(
@@ -189,7 +201,7 @@ class _VideoTranslateWidgetState extends ConsumerState<VideoTranslateWidget> {
                   height: 30,
                 ),
                 Center(
-                    child: state.isLoadingTranscription == true
+                    child: state.isLoadingTranslation == true
                         ? CircularProgressIndicator()
                         : state.translatedText == ""
                             ? Icon(
@@ -197,7 +209,43 @@ class _VideoTranslateWidgetState extends ConsumerState<VideoTranslateWidget> {
                                 size: 30,
                               )
                             : SingleChildScrollView(
-                                child: Text(state.translatedText!))),
+                                child: Container(
+                                    width: 400,
+                                    child: Container(
+                                        width: 400,
+                                        child: Text(state.translatedText!))))),
+                SizedBox(
+                  height: 30,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    IconButton(
+                        onPressed: () async {
+                          await ref
+                              .read(videoTranslateSProvider.notifier)
+                              .readText(state.translatedText!,
+                                  state.selectedLanguage!);
+                        },
+                        icon: Icon(Icons.play_circle, size: 50)),
+                    IconButton(
+                        onPressed: () async {
+                          await ref
+                              .read(videoTranslateSProvider.notifier)
+                              .saveSpeechAsAudioFile(state.translatedText!,
+                                  state.selectedLanguage!);
+                        },
+                        icon: Icon(Icons.audio_file, size: 50)),
+                    IconButton(
+                        onPressed: () async {
+                          await ref
+                              .read(videoTranslateSProvider.notifier)
+                              .generateVoiceOverForVideo();
+                        },
+                        icon: Icon(Icons.video_camera_back_outlined, size: 50)),
+                  ],
+                )
               ],
             ))
           ],
@@ -210,24 +258,16 @@ class _VideoTranslateWidgetState extends ConsumerState<VideoTranslateWidget> {
     WidgetRef ref,
     BuildContext context,
   ) {
-    var control = ref.read(videoTranslateSProvider.notifier);
     ref.listen<VideoTranslateScreenState>(videoTranslateSProvider,
         (previous, next) {
-      if (next.isSuccess!) {
-        // showMessageDialog(
-        //   isCancellable: false,
-        //   context: context,
-        //   title: "Success",
-        //   message: 'Details has been updated',
-        // );
-        control.initializeVideoPlayer(next.videoFilePath!);
+      var control = ref.read(videoTranslateSProvider.notifier);
+      if (next.showAlertMessage == true) {
+        showMessageDialog(
+            context: context,
+            title: next.messageTitle!,
+            message: next.message!,
+            onOkPressed: () => control.hideAlertMessage());
       }
-      // else {
-      //   if (next.message != null) {
-      //     showMessageDialog(
-      //         context: context, title: "Error", message: next.message!);
-      //   }
-      // }
     });
   }
 }
