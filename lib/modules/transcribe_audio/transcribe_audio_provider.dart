@@ -1,7 +1,8 @@
 import 'dart:io';
-import 'package:b_native/app_settings/app_key.dart';
+
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:dart_openai/dart_openai.dart';
+import '../../app_settings/app_key.dart';
 
 final transcribeAudioProvider = Provider((ref) => TranscribeAudio());
 

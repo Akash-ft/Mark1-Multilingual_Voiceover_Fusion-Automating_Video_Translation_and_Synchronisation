@@ -1,9 +1,9 @@
 import 'dart:convert';
-
-import 'package:b_native/app_settings/app_key.dart';
 import 'package:dio/dio.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:translator/translator.dart';
+
+import '../../app_settings/app_key.dart';
 
 final translateTextProvider = Provider((ref) => TranslateText());
 
@@ -11,14 +11,13 @@ class TranslateText {
   Dio client = Dio();
 
   Future<String> translateTextV1(String text, String targetLanguage) async {
-    try{
-    GoogleTranslator translator = GoogleTranslator();
-    Translation translation =
-        await translator.translate(text, to: targetLanguage);
-    print(translation.text);
-    return translation.text;
-    }
-    catch(e){
+    try {
+      GoogleTranslator translator = GoogleTranslator();
+      Translation translation =
+          await translator.translate(text, to: targetLanguage);
+      print(translation.text);
+      return translation.text;
+    } catch (e) {
       print('Error Translation API V1: $e');
       return '';
     }

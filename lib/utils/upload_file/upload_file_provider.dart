@@ -2,6 +2,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../app_settings/app_enum.dart';
+
 final uploadFileProvider = Provider((ref) => UploadFile());
 
 class UploadFile {
@@ -9,29 +11,29 @@ class UploadFile {
 
   Future<dynamic> pickFileData(int targetedSourceUno, int formatUno) async {
     dynamic fileData;
-    if (formatUno == 1) {
-      if (targetedSourceUno == 1) {
+    if (formatUno == mediaFormatValues[MediaFormatType.video]) {
+      if (targetedSourceUno == targetedSourceValues[TargetedSourceType.gallery]) {
         fileData = await _picker.pickVideo(source: ImageSource.gallery);
-      } else if (targetedSourceUno == 2) {
+      } else if (targetedSourceUno == targetedSourceValues[TargetedSourceType.camara]) {
         fileData = await _picker.pickVideo(source: ImageSource.camera);
       }
       return fileData;
     }
-    if (formatUno == 2) {
-      if (targetedSourceUno == 1) {
+    if (formatUno ==mediaFormatValues[MediaFormatType.image]) {
+      if (targetedSourceUno == targetedSourceValues[TargetedSourceType.gallery]) {
         fileData = await _picker.pickImage(source: ImageSource.gallery);
-      } else if (targetedSourceUno == 2) {
+      } else if (targetedSourceUno == targetedSourceValues[TargetedSourceType.camara]) {
         fileData = await _picker.pickImage(source: ImageSource.camera);
       }
       return fileData;
     }
-    if (formatUno == 3) {
-      if (targetedSourceUno == 1) {
+    if (formatUno == mediaFormatValues[MediaFormatType.audio]) {
+      if (targetedSourceUno == targetedSourceValues[TargetedSourceType.gallery]) {
         FilePickerResult? result = await FilePicker.platform.pickFiles(
-          type: FileType.audio,
-          allowedExtensions: ['mp3', 'wav', 'flac'],
+          type: FileType.audio
         );
-        fileData = result?.files.single.path ?? "";
+
+        fileData = result?.files.single;
       } else if (targetedSourceUno == 2) {}
     }
     return fileData;

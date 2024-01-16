@@ -1,4 +1,4 @@
-import 'package:b_native/utils/router/named_router.dart';
+import 'package:MVF/utils/router/named_router.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';

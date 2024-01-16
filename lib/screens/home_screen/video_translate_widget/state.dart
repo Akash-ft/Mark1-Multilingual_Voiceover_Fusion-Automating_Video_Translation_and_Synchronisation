@@ -34,7 +34,6 @@ class VideoTranslateScreenState {
       this.transcriptedText,
       this.translatedText,
       this.showAlertMessage});
-
   factory VideoTranslateScreenState.empty() {
     return VideoTranslateScreenState(
         videoFilePath: "",
@@ -53,7 +52,6 @@ class VideoTranslateScreenState {
         translatedText: "",
         showAlertMessage: false);
   }
-
   VideoTranslateScreenState copyWith(
       {String? videoFilePath,
       String? audioFilePath,

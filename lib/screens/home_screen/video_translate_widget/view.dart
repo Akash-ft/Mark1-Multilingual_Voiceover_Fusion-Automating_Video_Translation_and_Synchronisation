@@ -1,7 +1,9 @@
-import 'package:b_native/screens/home_screen/video_translate_widget/state.dart';
+
+import 'package:MVF/screens/home_screen/video_translate_widget/state.dart';
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import '../../../app_settings/app_enum.dart';
 import '../../../utils/reusable_widgets/alert_message.dart';
 import 'controller.dart';
 
@@ -18,7 +20,6 @@ class _VideoTranslateWidgetState extends ConsumerState<VideoTranslateWidget> {
   Widget build(BuildContext context) {
     handleStateChange(ref, context);
     final state = ref.watch(videoTranslateSProvider);
-    // final cController = ref.watch(videoTranslateSProvider).chewieController;
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -54,20 +55,24 @@ class _VideoTranslateWidgetState extends ConsumerState<VideoTranslateWidget> {
                 onPressed: () async {
                   await ref
                       .read(videoTranslateSProvider.notifier)
-                      .pickVideoFile(1, 1);
+                      .pickVideoFile(
+                          targetedSourceValues[TargetedSourceType.gallery]!,
+                          mediaFormatValues[MediaFormatType.video]!);
                   await ref
                       .read(videoTranslateSProvider.notifier)
-                      .extractAudio(state.videoFilePath!);
+                      .extractAudio();
                 },
                 child: Text("Upload  video  Gallery")),
             ElevatedButton(
                 onPressed: () async {
                   await ref
                       .read(videoTranslateSProvider.notifier)
-                      .pickVideoFile(2, 1);
+                      .pickVideoFile(
+                          targetedSourceValues[TargetedSourceType.camara]!,
+                          mediaFormatValues[MediaFormatType.video]!);
                   await ref
                       .read(videoTranslateSProvider.notifier)
-                      .extractAudio(state.videoFilePath!);
+                      .extractAudio();
                 },
                 child: Text("Record  video on Camera")),
           ],

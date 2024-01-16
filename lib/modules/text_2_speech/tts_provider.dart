@@ -10,11 +10,13 @@ class Text2Speech {
 
   Future<void> speak(String transcript, String languageCode) async {
     await flutterTts.setLanguage(languageCode);
+    await flutterTts.setSpeechRate(0.50);
     await flutterTts.speak(transcript);
   }
 
-  Future<String> saveToFile(String transcript,String languageCode) async {
-    String audioFilePath="";
+  Future<String> saveSpeechToFile(
+      String transcript, String languageCode) async {
+    String audioFilePath = "";
     await flutterTts.setLanguage(languageCode);
     String fileExtension = 'wav';
     String fileName = 'outputTranslatedAudio.$fileExtension';
@@ -30,4 +32,23 @@ class Text2Speech {
     return audioFilePath;
   }
 
+  Future<String> saveSyncSpeechToFile(String transcript, String languageCode,
+      double videoDuration, double translatedAudioDuration) async {
+    String audioFilePath = "";
+    double adjustedSpeechRate = videoDuration / translatedAudioDuration;
+    await flutterTts.setLanguage(languageCode);
+    await flutterTts.setSpeechRate(adjustedSpeechRate);
+    String fileExtension = 'wav';
+    String fileName = 'outputSyncTranslatedAudio.$fileExtension';
+    String filePath = '/sdcard/Download/$fileName';
+    // Directory appDocDir = await getApplicationDocumentsDirectory();
+    int result = await flutterTts.synthesizeToFile(transcript, filePath);
+    if (result == 1) {
+      audioFilePath = filePath;
+      print('Synced File saved at: $audioFilePath');
+    } else {
+      print('Failed to Synced save file');
+    }
+    return audioFilePath;
+  }
 }

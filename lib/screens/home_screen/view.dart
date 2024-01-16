@@ -1,5 +1,5 @@
-import 'package:b_native/screens/home_screen/video_translate_widget/view.dart';
-import 'package:b_native/screens/home_screen/voice_translate_widget/view.dart';
+import 'package:MVF/screens/home_screen/video_translate_widget/view.dart';
+import 'package:MVF/screens/home_screen/voice_translate_widget/view.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'controller.dart';
@@ -16,7 +16,7 @@ class HomeScreen extends ConsumerWidget {
         backgroundColor: Colors.black,
         centerTitle: true,
         title: Text(
-          'BNative',
+          'MVF',
           style: TextStyle(color: Colors.white),
         ),
       ),
@@ -27,7 +27,7 @@ class HomeScreen extends ConsumerWidget {
           index: currentIndex,
           children: const [
             Center(child: VideoTranslateWidget()),
-            Center(child: AudioTranslateWidget()),
+            Center(child: VoiceTranslateWidget()),
           ],
         );
       }),
@@ -35,19 +35,18 @@ class HomeScreen extends ConsumerWidget {
         builder: (context, ref, child) {
           print(" build nav");
           final currentIndex = ref.watch(homeController.bottomNavIndexProvider);
-          return NavigationBar(
-            selectedIndex: currentIndex,
-            destinations: const [
-              NavigationDestination(
+          return BottomNavigationBar(
+            currentIndex: currentIndex,
+            items: const <BottomNavigationBarItem> [
+              BottomNavigationBarItem(
                   icon: Icon(Icons.switch_video_outlined, size: 30),
                   label: 'Media'),
-              // NavigationDestination(
-              //   icon: Icon(Icons.image_search_outlined,size: 30), label: 'Image'),
-              NavigationDestination(
+
+              BottomNavigationBarItem(
                   icon: Icon(Icons.record_voice_over_outlined, size: 30),
                   label: 'Voice'),
             ],
-            onDestinationSelected: (value) {
+            onTap: (value) {
               ref
                   .read(homeController.bottomNavIndexProvider.notifier)
                   .update((state) => value);

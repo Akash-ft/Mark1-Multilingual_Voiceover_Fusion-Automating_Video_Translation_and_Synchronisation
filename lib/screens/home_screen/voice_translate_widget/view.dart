@@ -1,44 +1,53 @@
+import 'package:MVF/screens/home_screen/voice_translate_widget/state.dart';
+import 'package:chewie_audio/chewie_audio.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import '../../../utils/upload_file/upload_file_provider.dart';
+import '../../../app_settings/app_enum.dart';
+import '../../../utils/reusable_widgets/alert_message.dart';
 import 'controller.dart';
 
-class AudioTranslateWidget extends ConsumerStatefulWidget {
-  const AudioTranslateWidget({super.key});
+class VoiceTranslateWidget extends ConsumerStatefulWidget {
+  const VoiceTranslateWidget({super.key});
 
   @override
-  ConsumerState<AudioTranslateWidget> createState() =>
-      _AudioTranslateWidgetState();
+  ConsumerState<VoiceTranslateWidget> createState() =>
+      _VoiceTranslateWidgetState();
 }
 
-class _AudioTranslateWidgetState extends ConsumerState<AudioTranslateWidget> {
-  late TextEditingController _tController;
-
-  @override
-  void initState() {
-    super.initState();
-    _tController = TextEditingController();
-
-  }
-
-  @override
-  void dispose() {
-    _tController.dispose();
-    super.dispose();
-  }
-
+class _VoiceTranslateWidgetState extends ConsumerState<VoiceTranslateWidget> {
   @override
   Widget build(BuildContext context) {
-    final audioTranslateController = ref.read(audioTranslateSProvider);
-
+    handleStateChange(ref, context);
+    final state = ref.watch(voiceTranslateSProvider);
     return Column(
-      mainAxisAlignment: MainAxisAlignment.center ,
+      mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
+        state.audioFilePath != ""
+            ? state.chewieAudioController != null
+                ? Container(
+                    height: 200,
+                    width: 400,
+                    child: ChewieAudio(
+                      controller: state.chewieAudioController!,
+                    ))
+                : Center(
+                    child: Icon(
+                      Icons.music_video,
+                      size: 30,
+                    ),
+                  )
+            : Center(
+                child: Icon(
+                  Icons.music_off_outlined,
+                  size: 30,
+                ),
+              ),
+        SizedBox(
+          height: 30.0,
+        ),
         Icon(
-          ref.watch(audioTranslateController.audioFile) == ""
-              ? Icons.music_off_outlined
-              : Icons.music_note_outlined,
+          state.isRecording! ? Icons.mic : Icons.mic_off,
           size: 30,
         ),
         SizedBox(
@@ -49,19 +58,17 @@ class _AudioTranslateWidgetState extends ConsumerState<AudioTranslateWidget> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ElevatedButton(
-                onPressed: () async {
-                  // var file =await ref
-                  //     .read(uploadFileProvider)
-                  //     .pickFileData(2,3);
-                  // ref.read(audioTranslateController.audioFile.notifier).update((state) =>file.path);
-                }, child: Text("Start recording")),
+                onPressed: () {
+                  ref.read(voiceTranslateSProvider.notifier).audioRecording(
+                      recordingStateValues[RecordingState.Start]!);
+                },
+                child: Text("Start recording")),
             ElevatedButton(
-                onPressed: () async {
-                  // var file =await ref
-                  //     .read(uploadFileProvider)
-                  //     .pickFileData(2,3);
-                  // ref.read(audioTranslateController.audioFile.notifier).update((state) =>file.path);
-                }, child: Text("Stop recording"))
+                onPressed: () {
+                  ref.read(voiceTranslateSProvider.notifier).audioRecording(
+                      recordingStateValues[RecordingState.Stop]!);
+                },
+                child: Text("Stop recording"))
           ],
         ),
         SizedBox(
@@ -69,12 +76,197 @@ class _AudioTranslateWidgetState extends ConsumerState<AudioTranslateWidget> {
         ),
         ElevatedButton(
             onPressed: () async {
-              var file =await ref
-                  .read(uploadFileProvider)
-                  .pickFileData(1,3);
-              ref.read(audioTranslateController.audioFile.notifier).update((state) =>file.path);
-            }, child: Text("Upload a audio from storage"))
+              await ref.read(voiceTranslateSProvider.notifier).pickAudioFile(
+                  targetedSourceValues[TargetedSourceType.gallery]!,
+                  mediaFormatValues[MediaFormatType.audio]!);
+            },
+            child: Text("Upload a audio from storage")),
+        IconButton(
+            onPressed: () {
+              ref
+                  .read(voiceTranslateSProvider.notifier)
+                  .switchTab(state.tabIndex == 0 ? 1 : 0);
+            },
+            icon: Icon(
+              Icons.swap_horizontal_circle,
+              size: 30,
+            )),
+        SizedBox(
+          height: 40.0,
+        ),
+        IndexedStack(
+          index: state.tabIndex,
+          children: [
+            Container(
+                child: Column(
+                  children: [
+                    ElevatedButton(
+                        onPressed: () async {
+                          await ref
+                              .read(voiceTranslateSProvider.notifier)
+                              .transcription();
+                        },
+                        child: Text("Transcript")),
+                    SizedBox(
+                      height: 30,
+                    ),
+                    Center(
+                        child: state.isLoadingTranscription == true
+                            ? CircularProgressIndicator()
+                            : state.transcriptedText == ""
+                            ? Icon(
+                          Icons.task_rounded,
+                          size: 30,
+                        )
+                            : SingleChildScrollView(
+                            child: Container(
+                                width: 400,
+                                child: Text(state.transcriptedText!)))),
+                    SizedBox(
+                      height: 30,
+                    ),
+                    IconButton(
+                        onPressed: () async {
+                          await ref
+                              .read(voiceTranslateSProvider.notifier)
+                              .readText(state.transcriptedText!, "en");
+                        },
+                        icon: Icon(Icons.play_circle, size: 50))
+                  ],
+                )),
+            Container(
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        DropdownButton<String>(
+                          hint: state.selectedLanguage != null &&
+                              state.selectedLanguage!.isNotEmpty
+                              ? Text(
+                              'Selected Language: ${state.selectedLanguage!}')
+                              : Text('Select Language'),
+                          //value: state.selectedLanguage,
+                          underline: Container(
+                            height: 2,
+                            color: Colors.black,
+                          ),
+                          onChanged: (value) async {
+                            if (value != null && value.isNotEmpty) {
+                              ref
+                                  .read(voiceTranslateSProvider.notifier)
+                                  .setLanguage(value);
+                            }
+                          },
+                          items: const [
+                            DropdownMenuItem(
+                              value: 'es', // Spanish
+                              child: Text('Spanish'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'fr', // French
+                              child: Text('French'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'ta', // Tamil
+                              child: Text('Tamil'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'de', // German
+                              child: Text('German'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'ja', // Japanese
+                              child: Text('Japanese'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'ko', // Korean
+                              child: Text('Korean'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'zh', // Chinese
+                              child: Text('Chinese'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'hi', // Hindi
+                              child: Text('Hindi'),
+                            ),
+                          ],
+                        ),
+                        ElevatedButton(
+                            onPressed: () async {
+                              await ref
+                                  .read(voiceTranslateSProvider.notifier)
+                                  .translation();
+                            },
+                            child: Text("Translate")),
+                      ],
+                    ),
+                    SizedBox(
+                      height: 30,
+                    ),
+                    Center(
+                        child: state.isLoadingTranslation == true
+                            ? CircularProgressIndicator()
+                            : state.translatedText == ""
+                            ? Icon(
+                          Icons.language,
+                          size: 30,
+                        )
+                            : SingleChildScrollView(
+                            child: Container(
+                                width: 400,
+                                child: Container(
+                                    width: 400,
+                                    child: Text(state.translatedText!))))),
+                    SizedBox(
+                      height: 30,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        IconButton(
+                            onPressed: () async {
+                              await ref
+                                  .read(voiceTranslateSProvider.notifier)
+                                  .readText(state.translatedText!,
+                                  state.selectedLanguage!);
+                            },
+                            icon: Icon(Icons.play_circle, size: 50)),
+                        IconButton(
+                            onPressed: () async {
+                              await ref
+                                  .read(voiceTranslateSProvider.notifier)
+                                  .saveSpeechAsAudioFile(state.translatedText!,
+                                  state.selectedLanguage!);
+                            },
+                            icon: Icon(Icons.audio_file, size: 50)),
+                      ],
+                    )
+                  ],
+                ))
+          ],
+        )
       ],
     );
+  }
+
+  void handleStateChange(
+    WidgetRef ref,
+    BuildContext context,
+  ) {
+    ref.listen<VoiceTranslateScreenState>(voiceTranslateSProvider,
+        (previous, next) {
+      var control = ref.read(voiceTranslateSProvider.notifier);
+      if (next.showAlertMessage == true) {
+        showMessageDialog(
+            context: context,
+            title: next.messageTitle!,
+            message: next.message!,
+            onOkPressed: () => control.hideAlertMessage());
+      }
+    });
   }
 }
