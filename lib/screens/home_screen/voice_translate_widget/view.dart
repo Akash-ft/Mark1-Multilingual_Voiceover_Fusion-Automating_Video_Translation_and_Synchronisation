@@ -3,6 +3,7 @@ import 'package:chewie_audio/chewie_audio.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import '../../../app_settings/app_enum.dart';
+import '../../../app_settings/commons.dart';
 import '../../../utils/reusable_widgets/alert_message.dart';
 import 'controller.dart';
 
@@ -23,26 +24,30 @@ class _VoiceTranslateWidgetState extends ConsumerState<VoiceTranslateWidget> {
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        state.audioFilePath != ""
-            ? state.chewieAudioController != null
-                ? Container(
-                    height: 200,
-                    width: 400,
-                    child: ChewieAudio(
-                      controller: state.chewieAudioController!,
-                    ))
+        SizedBox(
+          height: 30.0,
+        ),
+        Container(
+            alignment: Alignment.topCenter,
+            height: 200,
+            width: 400,
+            child: state.audioFilePath != ""
+                ? state.chewieAudioController != null
+                    ? ChewieAudio(
+                        controller: state.chewieAudioController!,
+                      )
+                    : Center(
+                        child: Icon(
+                          Icons.music_video,
+                          size: 30,
+                        ),
+                      )
                 : Center(
                     child: Icon(
-                      Icons.music_video,
+                      Icons.music_off_outlined,
                       size: 30,
                     ),
-                  )
-            : Center(
-                child: Icon(
-                  Icons.music_off_outlined,
-                  size: 30,
-                ),
-              ),
+                  )),
         SizedBox(
           height: 30.0,
         ),
@@ -99,154 +104,119 @@ class _VoiceTranslateWidgetState extends ConsumerState<VoiceTranslateWidget> {
           children: [
             Container(
                 child: Column(
-                  children: [
-                    ElevatedButton(
-                        onPressed: () async {
-                          await ref
-                              .read(voiceTranslateSProvider.notifier)
-                              .transcription();
-                        },
-                        child: Text("Transcript")),
-                    SizedBox(
-                      height: 30,
-                    ),
-                    Center(
-                        child: state.isLoadingTranscription == true
-                            ? CircularProgressIndicator()
-                            : state.transcriptedText == ""
+              children: [
+                // ElevatedButton(
+                //     onPressed: () async {
+                //       await ref
+                //           .read(voiceTranslateSProvider.notifier)
+                //           .transcription();
+                //     },
+                //     child: Text("Transcript")),
+                SizedBox(
+                  height: 30,
+                ),
+                Center(
+                    child: state.isLoadingTranscription == true
+                        ? CircularProgressIndicator()
+                        : state.transcriptedText == ""
                             ? Icon(
-                          Icons.task_rounded,
-                          size: 30,
-                        )
+                                Icons.task_rounded,
+                                size: 30,
+                              )
                             : SingleChildScrollView(
-                            child: Container(
-                                width: 400,
-                                child: Text(state.transcriptedText!)))),
-                    SizedBox(
-                      height: 30,
+                                child: Container(
+                                    width: 400,
+                                    child: Text(state.transcriptedText!)))),
+                SizedBox(
+                  height: 30,
+                ),
+                IconButton(
+                    onPressed: () async {
+                      await ref
+                          .read(voiceTranslateSProvider.notifier)
+                          .readText(state.transcriptedText!, "en");
+                    },
+                    icon: Icon(Icons.play_circle, size: 50))
+              ],
+            )),
+            Container(
+                child: Column(
+              children: [
+                Container(
+                  width: 250,
+                  child: DropdownButton<String>(
+                    itemHeight: 50,
+                    menuMaxHeight: 300,
+                    isDense: false,
+                    isExpanded: true,
+                    hint: state.selectedLanguage != null &&
+                            state.selectedLanguage!.isNotEmpty
+                        ? Text(
+                            'Selected Language: ${Commons.languages.firstWhere((lang) => lang['code'] == state.selectedLanguage)['name']}')
+                        : Text('Select Language'),
+                    underline: Container(
+                      height: 2,
+                      color: Colors.black,
                     ),
+                    onChanged: (value) async {
+                      if (value != null && value.isNotEmpty) {
+                        ref
+                            .read(voiceTranslateSProvider.notifier)
+                            .setLanguage(value);
+                      }
+                    },
+                    items: Commons.languages.map((language) {
+                      return DropdownMenuItem<String>(
+                        value: language['code']!.toString(),
+                        child: Text(language['name']!.toString()),
+                      );
+                    }).toList(),
+                  ),
+                ),
+                SizedBox(
+                  height: 30,
+                ),
+                Center(
+                    child: state.isLoadingTranslation == true
+                        ? CircularProgressIndicator()
+                        : state.translatedText == ""
+                            ? Icon(
+                                Icons.language,
+                                size: 30,
+                              )
+                            : SingleChildScrollView(
+                                child: Container(
+                                    width: 400,
+                                    child: Container(
+                                        width: 400,
+                                        child: Text(state.translatedText!))))),
+                SizedBox(
+                  height: 30,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
                     IconButton(
                         onPressed: () async {
                           await ref
                               .read(voiceTranslateSProvider.notifier)
-                              .readText(state.transcriptedText!, "en");
+                              .readText(state.translatedText!,
+                                  state.selectedLanguage!);
                         },
-                        icon: Icon(Icons.play_circle, size: 50))
-                  ],
-                )),
-            Container(
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        DropdownButton<String>(
-                          hint: state.selectedLanguage != null &&
-                              state.selectedLanguage!.isNotEmpty
-                              ? Text(
-                              'Selected Language: ${state.selectedLanguage!}')
-                              : Text('Select Language'),
-                          //value: state.selectedLanguage,
-                          underline: Container(
-                            height: 2,
-                            color: Colors.black,
-                          ),
-                          onChanged: (value) async {
-                            if (value != null && value.isNotEmpty) {
-                              ref
-                                  .read(voiceTranslateSProvider.notifier)
-                                  .setLanguage(value);
-                            }
-                          },
-                          items: const [
-                            DropdownMenuItem(
-                              value: 'es', // Spanish
-                              child: Text('Spanish'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'fr', // French
-                              child: Text('French'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'ta', // Tamil
-                              child: Text('Tamil'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'de', // German
-                              child: Text('German'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'ja', // Japanese
-                              child: Text('Japanese'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'ko', // Korean
-                              child: Text('Korean'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'zh', // Chinese
-                              child: Text('Chinese'),
-                            ),
-                            DropdownMenuItem(
-                              value: 'hi', // Hindi
-                              child: Text('Hindi'),
-                            ),
-                          ],
-                        ),
-                        ElevatedButton(
-                            onPressed: () async {
-                              await ref
-                                  .read(voiceTranslateSProvider.notifier)
-                                  .translation();
-                            },
-                            child: Text("Translate")),
-                      ],
-                    ),
-                    SizedBox(
-                      height: 30,
-                    ),
-                    Center(
-                        child: state.isLoadingTranslation == true
-                            ? CircularProgressIndicator()
-                            : state.translatedText == ""
-                            ? Icon(
-                          Icons.language,
-                          size: 30,
-                        )
-                            : SingleChildScrollView(
-                            child: Container(
-                                width: 400,
-                                child: Container(
-                                    width: 400,
-                                    child: Text(state.translatedText!))))),
-                    SizedBox(
-                      height: 30,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        IconButton(
-                            onPressed: () async {
-                              await ref
-                                  .read(voiceTranslateSProvider.notifier)
-                                  .readText(state.translatedText!,
+                        icon: Icon(Icons.play_circle, size: 50)),
+                    IconButton(
+                        onPressed: () async {
+                          await ref
+                              .read(voiceTranslateSProvider.notifier)
+                              .saveSpeechAsAudioFile(state.translatedText!,
                                   state.selectedLanguage!);
-                            },
-                            icon: Icon(Icons.play_circle, size: 50)),
-                        IconButton(
-                            onPressed: () async {
-                              await ref
-                                  .read(voiceTranslateSProvider.notifier)
-                                  .saveSpeechAsAudioFile(state.translatedText!,
-                                  state.selectedLanguage!);
-                            },
-                            icon: Icon(Icons.audio_file, size: 50)),
-                      ],
-                    )
+                        },
+                        icon: Icon(Icons.audio_file, size: 50)),
                   ],
-                ))
+                )
+              ],
+            ))
           ],
         )
       ],

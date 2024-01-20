@@ -42,6 +42,7 @@ class VideoTranslateScreenController
     if (file != "") {
       state = state.copyWith(audioFilePath: file);
       print("Extract Audio file path ${file}");
+      await transcription();
     } else {
       print("Something went wrong in extract audio file path");
       state = state.copyWith(
@@ -67,11 +68,11 @@ class VideoTranslateScreenController
     if (state.audioFilePath != "") {
       state = state.copyWith(isLoadingTranscription: true);
       //COMMENTED FOR TESTING PURPOSE
-      // var transcriptedContent =
-      //  await transcriptAudio.transcribeAudio(state.audioFilePath!);
-      await Future.delayed(Duration(seconds: 1));
       var transcriptedContent =
-          "Excellence is never an accident. It is always the result of high intention, sincere effort, and intelligent execution. It represents the wise choice of many alternatives. Choice, not chance, determines your destiny.";
+       await transcriptAudio.transcribeAudio(state.audioFilePath!);
+      // await Future.delayed(Duration(seconds: 1));
+      // var transcriptedContent =
+      //     "Excellence is never an accident. It is always the result of high intention, sincere effort, and intelligent execution. It represents the wise choice of many alternatives. Choice, not chance, determines your destiny.";
       print("transcription ${transcriptedContent}");
       state = state.copyWith(
           transcriptedText: transcriptedContent, isLoadingTranscription: false);
@@ -83,6 +84,7 @@ class VideoTranslateScreenController
           messageTitle: "Error-Transcription");
     }
   }
+
   Future<void> translation() async {
     if (state.transcriptedText != "" && state.selectedLanguage != "") {
       state = state.copyWith(isLoadingTranslation: true);
@@ -147,8 +149,9 @@ class VideoTranslateScreenController
           messageTitle: "Error-GenerateVoiceOverForVideo");
     }
   }
-  void setLanguage(String languageCode) {
+  Future<void> setLanguage(String languageCode) async {
     state = state.copyWith(selectedLanguage: languageCode);
+    await translation();
   }
   void switchTab(int tabIndex) {
     state = state.copyWith(tabIndex: tabIndex);

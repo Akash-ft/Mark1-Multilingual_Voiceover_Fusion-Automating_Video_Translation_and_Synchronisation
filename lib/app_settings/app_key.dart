@@ -1,4 +1,4 @@
 class Token {
-  final String openAiApiKey = "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";
+  final String openAiApiKey = "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";
   final String googleApiKey ="";
 }

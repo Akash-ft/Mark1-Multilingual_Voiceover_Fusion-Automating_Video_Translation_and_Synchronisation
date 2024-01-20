@@ -1,4 +1,4 @@
-
+import 'package:MVF/app_settings/commons.dart';
 import 'package:MVF/screens/home_screen/video_translate_widget/state.dart';
 import 'package:chewie/chewie.dart';
 import 'package:flutter/material.dart';
@@ -24,26 +24,30 @@ class _VideoTranslateWidgetState extends ConsumerState<VideoTranslateWidget> {
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        state.videoFilePath != ""
-            ? state.chewieController != null
-                ? Container(
-                    height: 200,
-                    width: 400,
-                    child: Chewie(
-                      controller: state.chewieController!,
-                    ))
+        SizedBox(
+          height: 30.0,
+        ),
+        Container(
+            alignment: Alignment.topCenter,
+            height: 200,
+            width: 400,
+            child: state.videoFilePath != ""
+                ? state.chewieController != null
+                    ? Chewie(
+                        controller: state.chewieController!,
+                      )
+                    : Center(
+                        child: Icon(
+                          Icons.video_call,
+                          size: 30,
+                        ),
+                      )
                 : Center(
                     child: Icon(
-                      Icons.video_call,
+                      Icons.videocam_off,
                       size: 30,
                     ),
-                  )
-            : Center(
-                child: Icon(
-                  Icons.videocam_off,
-                  size: 30,
-                ),
-              ),
+                  )),
         SizedBox(
           height: 30.0,
         ),
@@ -99,13 +103,13 @@ class _VideoTranslateWidgetState extends ConsumerState<VideoTranslateWidget> {
             Container(
                 child: Column(
               children: [
-                ElevatedButton(
-                    onPressed: () async {
-                      await ref
-                          .read(videoTranslateSProvider.notifier)
-                          .transcription();
-                    },
-                    child: Text("Transcript")),
+                // ElevatedButton(
+                //     onPressed: () async {
+                //       await ref
+                //           .read(videoTranslateSProvider.notifier)
+                //           .transcription();
+                //     },
+                //     child: Text("Transcript")),
                 SizedBox(
                   height: 30,
                 ),
@@ -136,71 +140,36 @@ class _VideoTranslateWidgetState extends ConsumerState<VideoTranslateWidget> {
             Container(
                 child: Column(
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    DropdownButton<String>(
-                      hint: state.selectedLanguage != null &&
-                              state.selectedLanguage!.isNotEmpty
-                          ? Text(
-                              'Selected Language: ${state.selectedLanguage!}')
-                          : Text('Select Language'),
-                      //value: state.selectedLanguage,
-                      underline: Container(
-                        height: 2,
-                        color: Colors.black,
-                      ),
-                      onChanged: (value) async {
-                        if (value != null && value.isNotEmpty) {
-                          ref
-                              .read(videoTranslateSProvider.notifier)
-                              .setLanguage(value);
-                        }
-                      },
-                      items: const [
-                        DropdownMenuItem(
-                          value: 'es', // Spanish
-                          child: Text('Spanish'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'fr', // French
-                          child: Text('French'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'ta', // Tamil
-                          child: Text('Tamil'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'de', // German
-                          child: Text('German'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'ja', // Japanese
-                          child: Text('Japanese'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'ko', // Korean
-                          child: Text('Korean'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'zh', // Chinese
-                          child: Text('Chinese'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'hi', // Hindi
-                          child: Text('Hindi'),
-                        ),
-                      ],
+                Container(
+                  width: 250,
+                  child: DropdownButton<String>(
+                    itemHeight: 50,
+                    menuMaxHeight: 300,
+                    isDense: false,
+                    isExpanded: true,
+                    hint: state.selectedLanguage != null &&
+                            state.selectedLanguage!.isNotEmpty
+                        ? Text(
+                            'Selected Language : ${Commons.languages.firstWhere((lang) => lang['code'] == state.selectedLanguage)['name']}')
+                        : Text('Select Language'),
+                    underline: Container(
+                      height: 2,
+                      color: Colors.black,
                     ),
-                    ElevatedButton(
-                        onPressed: () async {
-                          await ref
-                              .read(videoTranslateSProvider.notifier)
-                              .translation();
-                        },
-                        child: Text("Translate")),
-                  ],
+                    onChanged: (value) async {
+                      if (value != null && value.isNotEmpty) {
+                        ref
+                            .read(videoTranslateSProvider.notifier)
+                            .setLanguage(value);
+                      }
+                    },
+                    items: Commons.languages.map((language) {
+                      return DropdownMenuItem<String>(
+                        value: language['code']!.toString(),
+                        child: Text(language['name']!.toString()),
+                      );
+                    }).toList(),
+                  ),
                 ),
                 SizedBox(
                   height: 30,

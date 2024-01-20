@@ -19,8 +19,9 @@ class _MyAppState extends ConsumerState<MyApp> {
   Widget build(BuildContext context) {
     final router = ref.watch(goRouterProvider);
     return MaterialApp.router(
+      debugShowMaterialGrid: false,
       debugShowCheckedModeBanner: false,
-      title: 'BNative',
+      title: 'MVF',
       routeInformationParser: router.routeInformationParser,
       routeInformationProvider: router.routeInformationProvider,
       routerDelegate: router.routerDelegate,
