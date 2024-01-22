@@ -68,11 +68,11 @@ class VideoTranslateScreenController
     if (state.audioFilePath != "") {
       state = state.copyWith(isLoadingTranscription: true);
       //COMMENTED FOR TESTING PURPOSE
-      var transcriptedContent =
-       await transcriptAudio.transcribeAudio(state.audioFilePath!);
-      // await Future.delayed(Duration(seconds: 1));
       // var transcriptedContent =
-      //     "Excellence is never an accident. It is always the result of high intention, sincere effort, and intelligent execution. It represents the wise choice of many alternatives. Choice, not chance, determines your destiny.";
+      //  await transcriptAudio.transcribeAudio(state.audioFilePath!);
+      await Future.delayed(Duration(seconds: 1));
+      var transcriptedContent =
+          "Excellence is never an accident. It is always the result of high intention, sincere effort, and intelligent execution. It represents the wise choice of many alternatives. Choice, not chance, determines your destiny.";
       print("transcription ${transcriptedContent}");
       state = state.copyWith(
           transcriptedText: transcriptedContent, isLoadingTranscription: false);
@@ -100,9 +100,11 @@ class VideoTranslateScreenController
           messageTitle: "Error-Translation");
     }
   }
+
   Future<void> readText(String text, String langCode) async {
     await text2speech.speak(text, langCode);
   }
+
   Future<void> saveSpeechAsAudioFile(String text, String langCode) async {
     var translatedAudioFile =
         await text2speech.saveSpeechToFile(text, langCode);
@@ -116,7 +118,9 @@ class VideoTranslateScreenController
           messageTitle: "Error-SaveSpeechAsAudioFile");
     }
   }
+
   Future<void> generateVoiceOverForVideo() async {
+    await saveSpeechAsAudioFile(state.translatedText!, state.selectedLanguage!);
     var muteVideoFilePath =
         await ffmpegTools.removeAudioFromVideo(state.videoFilePath!);
     if (muteVideoFilePath != "" && state.translatedAudioFilePath != "") {

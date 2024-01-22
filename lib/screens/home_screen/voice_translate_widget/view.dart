@@ -51,41 +51,60 @@ class _VoiceTranslateWidgetState extends ConsumerState<VoiceTranslateWidget> {
         SizedBox(
           height: 30.0,
         ),
-        Icon(
-          state.isRecording! ? Icons.mic : Icons.mic_off,
-          size: 30,
-        ),
-        SizedBox(
-          height: 30.0,
-        ),
         Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             ElevatedButton(
-                onPressed: () {
-                  ref.read(voiceTranslateSProvider.notifier).audioRecording(
-                      recordingStateValues[RecordingState.Start]!);
+                onPressed: () async {
+                  showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return Consumer (builder: (context, ref, child)=>
+                           AlertDialog(
+                            title: Text('Voice Recorder'),
+                            content: Icon(
+                              ref.watch(voiceTranslateSProvider).isRecording! ? Icons.mic : Icons.mic_off,
+                              size: 30,
+                            ),
+                            actions: [
+                              ElevatedButton(
+                                  onPressed: () {
+                                    ref
+                                        .read(voiceTranslateSProvider.notifier)
+                                        .audioRecording(recordingStateValues[
+                                            RecordingState.Start]!);
+                                  },
+                                  child: Text("Start recording")),
+                              ElevatedButton(
+                                  onPressed: () {
+                                    ref
+                                        .read(voiceTranslateSProvider.notifier)
+                                        .audioRecording(recordingStateValues[
+                                            RecordingState.Stop]!);
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: Text("Stop recording"))
+                            ],
+                          ),
+                        );
+                      });
                 },
-                child: Text("Start recording")),
+                child: Text("Record audio in Microphone")),
             ElevatedButton(
-                onPressed: () {
-                  ref.read(voiceTranslateSProvider.notifier).audioRecording(
-                      recordingStateValues[RecordingState.Stop]!);
+                onPressed: () async {
+                  await ref
+                      .read(voiceTranslateSProvider.notifier)
+                      .pickAudioFile(
+                          targetedSourceValues[TargetedSourceType.gallery]!,
+                          mediaFormatValues[MediaFormatType.audio]!);
                 },
-                child: Text("Stop recording"))
+                child: Text("Upload a audio from storage")),
           ],
         ),
         SizedBox(
           height: 30.0,
         ),
-        ElevatedButton(
-            onPressed: () async {
-              await ref.read(voiceTranslateSProvider.notifier).pickAudioFile(
-                  targetedSourceValues[TargetedSourceType.gallery]!,
-                  mediaFormatValues[MediaFormatType.audio]!);
-            },
-            child: Text("Upload a audio from storage")),
         IconButton(
             onPressed: () {
               ref
@@ -105,13 +124,6 @@ class _VoiceTranslateWidgetState extends ConsumerState<VoiceTranslateWidget> {
             Container(
                 child: Column(
               children: [
-                // ElevatedButton(
-                //     onPressed: () async {
-                //       await ref
-                //           .read(voiceTranslateSProvider.notifier)
-                //           .transcription();
-                //     },
-                //     child: Text("Transcript")),
                 SizedBox(
                   height: 30,
                 ),
@@ -142,36 +154,39 @@ class _VoiceTranslateWidgetState extends ConsumerState<VoiceTranslateWidget> {
             Container(
                 child: Column(
               children: [
-                Container(
-                  width: 250,
-                  child: DropdownButton<String>(
-                    itemHeight: 50,
-                    menuMaxHeight: 300,
-                    isDense: false,
-                    isExpanded: true,
-                    hint: state.selectedLanguage != null &&
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text('Select Language'),
+                    SizedBox(width: 25),
+                    Container(
+                      width: 100,
+                      child: DropdownButton<String>(
+                        itemHeight: 50,
+                        menuMaxHeight: 250,
+                        isDense: false,
+                        isExpanded: true,
+                        hint: state.selectedLanguage != null &&
                             state.selectedLanguage!.isNotEmpty
-                        ? Text(
-                            'Selected Language: ${Commons.languages.firstWhere((lang) => lang['code'] == state.selectedLanguage)['name']}')
-                        : Text('Select Language'),
-                    underline: Container(
-                      height: 2,
-                      color: Colors.black,
+                            ? Text(Commons.languages.firstWhere((lang) => lang['code'] == state.selectedLanguage)['name']!)
+                            : Text(''),
+                        onChanged: (value) async {
+                          if (value != null && value.isNotEmpty) {
+                            ref
+                                .read(voiceTranslateSProvider.notifier)
+                                .setLanguage(value);
+                          }
+                        },
+                        items: Commons.languages.map((language) {
+                          return DropdownMenuItem<String>(
+                            value: language['code']!.toString(),
+                            child: Text(language['name']!.toString()),
+                          );
+                        }).toList(),
+                      ),
                     ),
-                    onChanged: (value) async {
-                      if (value != null && value.isNotEmpty) {
-                        ref
-                            .read(voiceTranslateSProvider.notifier)
-                            .setLanguage(value);
-                      }
-                    },
-                    items: Commons.languages.map((language) {
-                      return DropdownMenuItem<String>(
-                        value: language['code']!.toString(),
-                        child: Text(language['name']!.toString()),
-                      );
-                    }).toList(),
-                  ),
+                  ],
                 ),
                 SizedBox(
                   height: 30,

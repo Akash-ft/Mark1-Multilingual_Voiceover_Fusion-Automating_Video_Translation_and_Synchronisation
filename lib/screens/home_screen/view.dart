@@ -1,3 +1,4 @@
+import 'package:MVF/screens/home_screen/state.dart';
 import 'package:MVF/screens/home_screen/video_translate_widget/view.dart';
 import 'package:MVF/screens/home_screen/voice_translate_widget/view.dart';
 import 'package:flutter/material.dart';
@@ -9,8 +10,8 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    print("build layout");
-    final homeController = ref.read(homeSProvider);
+    handleStateChange(ref, context);
+    final state = ref.watch(homeSProvider);
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.black,
@@ -20,40 +21,34 @@ class HomeScreen extends ConsumerWidget {
           style: TextStyle(color: Colors.white),
         ),
       ),
-      body: Consumer(builder: (context, ref, child) {
-        print("Build body");
-        final currentIndex = ref.watch(homeController.bottomNavIndexProvider);
-        return IndexedStack(
-          index: currentIndex,
-          children: const [
-            Center(child: VideoTranslateWidget()),
-            Center(child: VoiceTranslateWidget()),
-          ],
-        );
-      }),
-      bottomNavigationBar: Consumer(
-        builder: (context, ref, child) {
-          print(" build nav");
-          final currentIndex = ref.watch(homeController.bottomNavIndexProvider);
-          return BottomNavigationBar(
-            currentIndex: currentIndex,
-            items: const <BottomNavigationBarItem> [
-              BottomNavigationBarItem(
-                  icon: Icon(Icons.switch_video_outlined, size: 30),
-                  label: 'Media'),
-
-              BottomNavigationBarItem(
-                  icon: Icon(Icons.record_voice_over_outlined, size: 30),
-                  label: 'Voice'),
-            ],
-            onTap: (value) {
-              ref
-                  .read(homeController.bottomNavIndexProvider.notifier)
-                  .update((state) => value);
-            },
-          );
-        },
+      body: IndexedStack(
+        index: state.tabIndex,
+        children: const [
+          Center(child: VideoTranslateWidget()),
+          Center(child: VoiceTranslateWidget()),
+        ],
       ),
+      bottomNavigationBar:  BottomNavigationBar(
+          currentIndex: state.tabIndex!,
+          items: const <BottomNavigationBarItem>[
+            BottomNavigationBarItem(
+                icon: Icon(Icons.switch_video_outlined, size: 30),
+                label: 'Media'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.record_voice_over_outlined, size: 30),
+                label: 'Voice'),
+          ],
+          onTap: (value) {
+            ref.read(homeSProvider.notifier).switchTab(value);
+          },
+        ),
     );
   }
+}
+
+void handleStateChange(
+  WidgetRef ref,
+  BuildContext context,
+) {
+  ref.listen<HomeScreenState>(homeSProvider, (previous, next) {});
 }

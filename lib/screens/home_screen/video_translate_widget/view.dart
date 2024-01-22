@@ -103,13 +103,6 @@ class _VideoTranslateWidgetState extends ConsumerState<VideoTranslateWidget> {
             Container(
                 child: Column(
               children: [
-                // ElevatedButton(
-                //     onPressed: () async {
-                //       await ref
-                //           .read(videoTranslateSProvider.notifier)
-                //           .transcription();
-                //     },
-                //     child: Text("Transcript")),
                 SizedBox(
                   height: 30,
                 ),
@@ -140,36 +133,39 @@ class _VideoTranslateWidgetState extends ConsumerState<VideoTranslateWidget> {
             Container(
                 child: Column(
               children: [
-                Container(
-                  width: 250,
-                  child: DropdownButton<String>(
-                    itemHeight: 50,
-                    menuMaxHeight: 300,
-                    isDense: false,
-                    isExpanded: true,
-                    hint: state.selectedLanguage != null &&
-                            state.selectedLanguage!.isNotEmpty
-                        ? Text(
-                            'Selected Language : ${Commons.languages.firstWhere((lang) => lang['code'] == state.selectedLanguage)['name']}')
-                        : Text('Select Language'),
-                    underline: Container(
-                      height: 2,
-                      color: Colors.black,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text('Select Language'),
+                    SizedBox(width: 25),
+                    Container(
+                      width: 100,
+                      child: DropdownButton<String>(
+                        itemHeight: 50,
+                        menuMaxHeight: 250,
+                        isDense: false,
+                        isExpanded: true,
+                        hint: state.selectedLanguage != null &&
+                                state.selectedLanguage!.isNotEmpty
+                            ? Text(Commons.languages.firstWhere((lang) => lang['code'] == state.selectedLanguage)['name']!)
+                            : Text(''),
+                        onChanged: (value) async {
+                          if (value != null && value.isNotEmpty) {
+                            ref
+                                .read(videoTranslateSProvider.notifier)
+                                .setLanguage(value);
+                          }
+                        },
+                        items: Commons.languages.map((language) {
+                          return DropdownMenuItem<String>(
+                            value: language['code']!.toString(),
+                            child: Text(language['name']!.toString()),
+                          );
+                        }).toList(),
+                      ),
                     ),
-                    onChanged: (value) async {
-                      if (value != null && value.isNotEmpty) {
-                        ref
-                            .read(videoTranslateSProvider.notifier)
-                            .setLanguage(value);
-                      }
-                    },
-                    items: Commons.languages.map((language) {
-                      return DropdownMenuItem<String>(
-                        value: language['code']!.toString(),
-                        child: Text(language['name']!.toString()),
-                      );
-                    }).toList(),
-                  ),
+                  ],
                 ),
                 SizedBox(
                   height: 30,
@@ -203,14 +199,6 @@ class _VideoTranslateWidgetState extends ConsumerState<VideoTranslateWidget> {
                                   state.selectedLanguage!);
                         },
                         icon: Icon(Icons.play_circle, size: 50)),
-                    IconButton(
-                        onPressed: () async {
-                          await ref
-                              .read(videoTranslateSProvider.notifier)
-                              .saveSpeechAsAudioFile(state.translatedText!,
-                                  state.selectedLanguage!);
-                        },
-                        icon: Icon(Icons.audio_file, size: 50)),
                     IconButton(
                         onPressed: () async {
                           await ref

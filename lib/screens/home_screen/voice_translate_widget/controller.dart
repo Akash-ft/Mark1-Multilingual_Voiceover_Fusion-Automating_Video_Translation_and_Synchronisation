@@ -1,4 +1,3 @@
-
 import 'dart:io';
 import 'package:MVF/modules/audio_recorder/audio_recorder_provider.dart';
 import 'package:MVF/screens/home_screen/voice_translate_widget/state.dart';
@@ -12,19 +11,18 @@ import '../../../modules/translate_text/translate_text_provider.dart';
 import '../../../utils/upload_file/upload_file_provider.dart';
 
 final voiceTranslateSProvider = StateNotifierProvider.autoDispose<
-    VoiceTranslateScreenController, VoiceTranslateScreenState>(
-        (ref) => VoiceTranslateScreenController(
-            ref.read(uploadFileProvider),
-            ref.read(transcribeAudioProvider),
-            ref.read(translateTextProvider),
-            ref.read(Text2SpeechProvider),
-            ref.read(VoiceRecordProvider)
-        ));
+        VoiceTranslateScreenController, VoiceTranslateScreenState>(
+    (ref) => VoiceTranslateScreenController(
+        ref.read(uploadFileProvider),
+        ref.read(transcribeAudioProvider),
+        ref.read(translateTextProvider),
+        ref.read(Text2SpeechProvider),
+        ref.read(VoiceRecordProvider)));
 
 class VoiceTranslateScreenController
     extends StateNotifier<VoiceTranslateScreenState> {
-  VoiceTranslateScreenController(this.uploadFile,
-      this.transcriptAudio, this.translateText, this.text2speech, this.voiceRecord)
+  VoiceTranslateScreenController(this.uploadFile, this.transcriptAudio,
+      this.translateText, this.text2speech, this.voiceRecord)
       : super(VoiceTranslateScreenState.empty());
   UploadFile uploadFile;
   TranscribeAudio transcriptAudio;
@@ -32,15 +30,16 @@ class VoiceTranslateScreenController
   Text2Speech text2speech;
   VoiceRecorder voiceRecord;
 
-  void audioRecording(int status){
-    String file ='/sdcard/Download/audio_recording.wav';
-    if(status == recordingStateValues[RecordingState.Start]){
+  void audioRecording(int status) async {
+    String file = '/sdcard/Download/audio_recording.wav';
+    if (status == recordingStateValues[RecordingState.Start]) {
+      state = state.copyWith(isRecording: true);
       voiceRecord.startRecording(file);
-      state= state.copyWith(isRecording: true,audioFilePath:file );
-    } else if (status == recordingStateValues[RecordingState.Stop]){
+      state = state.copyWith(audioFilePath: file);
+    } else if (status == recordingStateValues[RecordingState.Stop]) {
       voiceRecord.stopRecording();
-      state =state.copyWith(isRecording: false);
-      initializeAudioPlayer(file);
+      state = state.copyWith(isRecording: false);
+      await initializeAudioPlayer(file);
     }
   }
 
@@ -72,7 +71,7 @@ class VoiceTranslateScreenController
       state = state.copyWith(isLoadingTranscription: true);
       //COMMENTED FOR TESTING PURPOSE
       var transcriptedContent =
-       await transcriptAudio.transcribeAudio(state.audioFilePath!);
+          await transcriptAudio.transcribeAudio(state.audioFilePath!);
       // await Future.delayed(Duration(seconds: 1));
       // var transcriptedContent =
       //     "Excellence is never an accident. It is always the result of high intention, sincere effort, and intelligent execution. It represents the wise choice of many alternatives. Choice, not chance, determines your destiny.";
@@ -81,19 +80,29 @@ class VoiceTranslateScreenController
           transcriptedText: transcriptedContent, isLoadingTranscription: false);
     } else {
       print("Audio file path is missing for transcription");
-      state = state.copyWith(showAlertMessage: true,message:"Something went wrong while Transcription",messageTitle:"Error-Transcription");
+      state = state.copyWith(
+          showAlertMessage: true,
+          message: "Something went wrong while Transcription",
+          messageTitle: "Error-Transcription");
     }
   }
 
   Future<void> saveSpeechAsAudioFile(String text, String langCode) async {
-    var translatedAudioFile = await text2speech.saveSpeechToFile(text, langCode);
+    var translatedAudioFile =
+        await text2speech.saveSpeechToFile(text, langCode);
     if (translatedAudioFile != "") {
       state = state.copyWith(translatedAudioFilePath: translatedAudioFile);
       await initializeAudioPlayer(translatedAudioFile);
-      state = state.copyWith(showAlertMessage: true,message:"Translated audio is loaded in the player",messageTitle:"Success-GenerateVoiceOverForAudio");
+      state = state.copyWith(
+          showAlertMessage: true,
+          message: "Translated audio is loaded in the player",
+          messageTitle: "Success-GenerateVoiceOverForAudio");
     } else {
       print("Translated Audio file path is missing for transcription");
-      state = state.copyWith(showAlertMessage: true,message:"Failed to save the Speech file",messageTitle:"Error-SaveSpeechAsAudioFile");
+      state = state.copyWith(
+          showAlertMessage: true,
+          message: "Failed to save the Speech file",
+          messageTitle: "Error-SaveSpeechAsAudioFile");
     }
   }
 
@@ -106,13 +115,18 @@ class VoiceTranslateScreenController
           translatedText: translatedContent, isLoadingTranslation: false);
     } else {
       print("Transacripted text or Selected language is empty");
-      state = state.copyWith(showAlertMessage: true,message:"Something went wrong while Translation",messageTitle:"Error-Translation");
+      state = state.copyWith(
+          showAlertMessage: true,
+          message: "Something went wrong while Translation",
+          messageTitle: "Error-Translation");
     }
   }
 
   Future<void> readText(String text, String langCode) async {
     await text2speech.speak(text, langCode);
   }
+
+  Future<void> openVoiceRecorder() async {}
 
   Future<void> setLanguage(String languageCode) async {
     state = state.copyWith(selectedLanguage: languageCode);
@@ -123,7 +137,7 @@ class VoiceTranslateScreenController
     state = state.copyWith(tabIndex: tabIndex);
   }
 
-  void hideAlertMessage(){
-    state =state.copyWith(showAlertMessage: false);
+  void hideAlertMessage() {
+    state = state.copyWith(showAlertMessage: false);
   }
 }
