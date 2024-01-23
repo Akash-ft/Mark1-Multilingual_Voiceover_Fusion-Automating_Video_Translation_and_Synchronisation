@@ -66,7 +66,7 @@ class _VideoTranslateWidgetState extends ConsumerState<VideoTranslateWidget> {
                       .read(videoTranslateSProvider.notifier)
                       .extractAudio();
                 },
-                child: Text("Upload  video  Gallery")),
+                child: Text("Upload  video")),
             ElevatedButton(
                 onPressed: () async {
                   await ref
@@ -78,7 +78,7 @@ class _VideoTranslateWidgetState extends ConsumerState<VideoTranslateWidget> {
                       .read(videoTranslateSProvider.notifier)
                       .extractAudio();
                 },
-                child: Text("Record  video on Camera")),
+                child: Text("Record video")),
           ],
         ),
         SizedBox(

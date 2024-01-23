@@ -90,7 +90,7 @@ class _VoiceTranslateWidgetState extends ConsumerState<VoiceTranslateWidget> {
                         );
                       });
                 },
-                child: Text("Record audio in Microphone")),
+                child: Text("Record audio")),
             ElevatedButton(
                 onPressed: () async {
                   await ref
@@ -99,7 +99,7 @@ class _VoiceTranslateWidgetState extends ConsumerState<VoiceTranslateWidget> {
                           targetedSourceValues[TargetedSourceType.gallery]!,
                           mediaFormatValues[MediaFormatType.audio]!);
                 },
-                child: Text("Upload a audio from storage")),
+                child: Text("Upload audio")),
           ],
         ),
         SizedBox(

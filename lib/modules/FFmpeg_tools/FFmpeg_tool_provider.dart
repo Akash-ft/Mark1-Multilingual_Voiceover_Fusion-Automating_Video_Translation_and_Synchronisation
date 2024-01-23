@@ -8,6 +8,7 @@ import 'package:path_provider/path_provider.dart';
 final FFmpegToolProvider = Provider((ref) => FFmpegTools());
 
 class FFmpegTools {
+
   Future<String> extractAudioFromVideo(String videoFile) async {
     try {
       ReturnCode? returnCode;
@@ -36,10 +37,11 @@ class FFmpegTools {
     }
   }
 
-  Future<double?> getMediaDuration(String filePath) async {
+  Future<double> getMediaDuration(String filePath) async {
     try {
       final mediaInfoSession = await FFprobeKit.getMediaInformation(filePath);
       final mediaInfo = mediaInfoSession.getMediaInformation()!;
+      await Future.delayed(Duration(seconds: 1));
       final duration = double.parse(mediaInfo.getDuration()!);
       print('Duration audio file: $duration');
       return duration;
@@ -72,8 +74,7 @@ class FFmpegTools {
     }
   }
 
-  Future<String> mergeAudioInVideo(
-      String videoFile, String audioFilePath) async {
+  Future<String> mergeAudioInVideo(String videoFile, String audioFilePath) async {
     try {
       ReturnCode? returnCode;
       String outputFilePath = '/sdcard/Download/mergedVideo.mp4';
@@ -96,4 +97,32 @@ class FFmpegTools {
       return '';
     }
   }
+
+  Future<String> adjustAudioSpeed(String audioFile, double playbackSpeed) async {
+    try {
+      ReturnCode? returnCode;
+      String outputFilePath = '/sdcard/Download/ajustAudioSpeed.wav';
+      double roundedValue = double.parse(playbackSpeed.toStringAsFixed(1));
+      String command = '-i $audioFile -filter:a "atempo=$roundedValue" $outputFilePath';
+
+      final session = await FFmpegKit.execute(command);
+      returnCode = await session.getReturnCode();
+
+      print('FFmpeg command Remove and Adjust Audio Speed ${await session.getState()} and Code $returnCode');
+
+      if (returnCode!.getValue() == ReturnCode.success) {
+        print('Adjust Audio Speed file exists: $outputFilePath');
+        return outputFilePath;
+      } else {
+        var outPut = await File(outputFilePath).exists() ? outputFilePath : '';
+        print('Adjust Audio Speed file else block $outPut.');
+        return outPut;
+      }
+    } catch (e) {
+      print('Adjust Audio Speed: $e');
+      return '';
+    }
+  }
+
+
 }

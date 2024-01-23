@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:MVF/screens/home_screen/video_translate_widget/state.dart';
 import 'package:chewie/chewie.dart';
+import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:video_player/video_player.dart';
 import '../../../modules/FFmpeg_tools/FFmpeg_tool_provider.dart';
@@ -19,6 +20,7 @@ final videoTranslateSProvider = StateNotifierProvider.autoDispose<
           ref.read(translateTextProvider),
           ref.read(Text2SpeechProvider),
         ));
+
 class VideoTranslateScreenController
     extends StateNotifier<VideoTranslateScreenState> {
   VideoTranslateScreenController(this.uploadFile, this.ffmpegTools,
@@ -37,21 +39,49 @@ class VideoTranslateScreenController
       await initializeVideoPlayer(file.path);
     }
   }
+
   Future<void> extractAudio() async {
     var file = await ffmpegTools.extractAudioFromVideo(state.videoFilePath!);
     if (file != "") {
-      state = state.copyWith(audioFilePath: file);
+      state = state.copyWith(audioFilePath: file, isLoadingTranscription: true);
       print("Extract Audio file path ${file}");
       await transcription();
     } else {
       print("Something went wrong in extract audio file path");
       state = state.copyWith(
+          isLoadingTranscription: false,
           showAlertMessage: true,
           message: "Failed to extract audio",
           messageTitle: "Error-ExtractAudio");
     }
   }
-  Future<void> initializeVideoPlayer(String filePath) async {
+
+  Future<List<Subtitle>> generateSubtitles() async {
+    List<String> words = state.translatedText!.split('.');
+    double duration = await ffmpegTools.getMediaDuration(state.audioFilePath!);
+    Duration totalDuration = Duration(seconds: duration!.toInt());
+    double wordDuration = (totalDuration.inSeconds / words.length);
+    List<Subtitle> subtitles = [];
+    for (int i = 0; i < words.length; i++) {
+      Duration start = Duration(seconds: (i * wordDuration).round());
+      Duration end = Duration(seconds: ((i + 1) * wordDuration).round());
+      if (end > totalDuration) {
+        end = totalDuration;
+      }
+      subtitles.add(
+        Subtitle(
+          index: i,
+          start: start,
+          end: end,
+          text: words[i],
+        ),
+      );
+    }
+    return subtitles;
+  }
+
+  Future<void> initializeVideoPlayer(String filePath,
+      {bool enableSubtitle = false}) async {
     File file = File(filePath);
     print("video player initializes");
     final videoPlayerController = VideoPlayerController.file(file);
@@ -59,11 +89,24 @@ class VideoTranslateScreenController
     state = state.copyWith(
       videoFilePath: filePath,
       videoPlayerController: videoPlayerController,
-      chewieController: ChewieController(
-        videoPlayerController: videoPlayerController,
-      ),
+      chewieController: enableSubtitle
+          ? ChewieController(
+              videoPlayerController: videoPlayerController,
+              subtitle: Subtitles(await generateSubtitles()),
+              subtitleBuilder: (context, subtitle) => Container(
+                padding: const EdgeInsets.all(10.0),
+                child: Text(
+                  subtitle,
+                  style: const TextStyle(color: Colors.white),
+                ),
+              ),
+            )
+          : ChewieController(
+              videoPlayerController: videoPlayerController,
+            ),
     );
   }
+
   Future<void> transcription() async {
     if (state.audioFilePath != "") {
       state = state.copyWith(isLoadingTranscription: true);
@@ -120,19 +163,45 @@ class VideoTranslateScreenController
   }
 
   Future<void> generateVoiceOverForVideo() async {
-    await saveSpeechAsAudioFile(state.translatedText!, state.selectedLanguage!);
-    var muteVideoFilePath =
-        await ffmpegTools.removeAudioFromVideo(state.videoFilePath!);
-    if (muteVideoFilePath != "" && state.translatedAudioFilePath != "") {
-      double? videoDuration =
-          await ffmpegTools.getMediaDuration(state.audioFilePath!);
-      double? translatedAudioDuration =
-          await ffmpegTools.getMediaDuration(state.translatedAudioFilePath!);
-      //var syncedtranslatedAudioFilePath= await text2speech.saveSyncSpeechToFile(state.translatedText!, state.selectedLanguage!, videoDuration!, translatedAudioDuration!);
+    var muteVideoFilePath = "";
+    var adjustedTranslatedAudioFile = "";
+    if (state.translatedText != "" && state.selectedLanguage != "") {
+      await saveSpeechAsAudioFile(
+          state.translatedText!, state.selectedLanguage!);
+    } else {
+      state = state.copyWith(
+          showAlertMessage: true,
+          message: state.translatedText == ""
+              ? "Please upload/record video"
+              : "Please select language",
+          messageTitle: "Error-GenerateVoiceOverForVideo");
+    }
+    if (state.videoFilePath != "") {
+      muteVideoFilePath =
+          await ffmpegTools.removeAudioFromVideo(state.videoFilePath!);
+    } else {
+      state = state.copyWith(
+          showAlertMessage: true,
+          message: "Please upload/record video",
+          messageTitle: "Error-GenerateVoiceOverForVideo");
+    }
+    if (state.audioFilePath != "" && state.translatedAudioFilePath != "") {
+      double playBackSpeed = calculatePlaybackSpeed(
+          await ffmpegTools.getMediaDuration(state.audioFilePath!),
+          await ffmpegTools.getMediaDuration(state.translatedAudioFilePath!));
+      adjustedTranslatedAudioFile = await ffmpegTools.adjustAudioSpeed(
+          state.translatedAudioFilePath!, playBackSpeed);
+    } else {
+      state = state.copyWith(
+          showAlertMessage: true,
+          message: "Something went wrong while adjust audio",
+          messageTitle: "Error-GenerateVoiceOverForVideo");
+    }
+    if (muteVideoFilePath != "" && adjustedTranslatedAudioFile != "") {
       var mergedVideoFile = await ffmpegTools.mergeAudioInVideo(
-          muteVideoFilePath, state.translatedAudioFilePath!);
+          muteVideoFilePath, adjustedTranslatedAudioFile!);
       if (mergedVideoFile != "") {
-        await initializeVideoPlayer(mergedVideoFile);
+        await initializeVideoPlayer(mergedVideoFile, enableSubtitle: true);
         state = state.copyWith(
             showAlertMessage: true,
             message: "Translated video is loaded in the player",
@@ -153,13 +222,22 @@ class VideoTranslateScreenController
           messageTitle: "Error-GenerateVoiceOverForVideo");
     }
   }
+
+  double calculatePlaybackSpeed(
+      double videoDuration, double translatedAudioDuration) {
+    double value = 1 / (videoDuration / translatedAudioDuration);
+    return value;
+  }
+
   Future<void> setLanguage(String languageCode) async {
     state = state.copyWith(selectedLanguage: languageCode);
     await translation();
   }
+
   void switchTab(int tabIndex) {
     state = state.copyWith(tabIndex: tabIndex);
   }
+
   void hideAlertMessage() {
     state = state.copyWith(showAlertMessage: false);
   }
