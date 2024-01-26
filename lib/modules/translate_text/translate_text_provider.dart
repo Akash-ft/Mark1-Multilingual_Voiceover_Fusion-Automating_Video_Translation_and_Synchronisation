@@ -24,19 +24,29 @@ class TranslateText {
   }
 
   Future<String> translateTextV2(String text, String targetLanguage) async {
+
     try {
-      final String apiUrl =
+      String translatedText="";
+      const String apiUrl =
           'https://translation.googleapis.com/language/translate/v2';
       Map<String, dynamic> payload = {
         'q': text,
         'target': targetLanguage,
-        'key': Token().googleApiKey,
       };
-      final response = await client.post(apiUrl, data: payload);
+      Map<String, dynamic> headers = {
+        'Content-Type': 'application/json',
+        'X-goog-api-key': Token().googleApiKey,
+      };
+
+      final response = await client.post(
+        apiUrl,data: payload,options: Options(headers: headers)
+      );
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> data = json.decode(response.toString());
-        return data['data']['translations'][0]['translatedText'];
+        print(response.data);
+        final Map<String,dynamic> data = response.data;
+        translatedText =data['data']['translations'][0]['translatedText'];
+        return translatedText;
       } else {
         print('Google Translate API Error: ${response.statusCode}');
         return '';

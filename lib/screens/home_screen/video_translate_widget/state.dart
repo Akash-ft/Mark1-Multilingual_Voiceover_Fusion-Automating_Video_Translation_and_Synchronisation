@@ -17,6 +17,7 @@ class VideoTranslateScreenState {
   final String? transcriptedText;
   final String? translatedText;
   final bool? showAlertMessage;
+  final bool? mainScreenLoader;
 
   VideoTranslateScreenState(
       {this.videoFilePath,
@@ -33,7 +34,8 @@ class VideoTranslateScreenState {
       this.selectedLanguage,
       this.transcriptedText,
       this.translatedText,
-      this.showAlertMessage});
+      this.showAlertMessage,
+        this.mainScreenLoader,});
   factory VideoTranslateScreenState.empty() {
     return VideoTranslateScreenState(
         videoFilePath: "",
@@ -50,7 +52,8 @@ class VideoTranslateScreenState {
         selectedLanguage: "",
         transcriptedText: "",
         translatedText: "",
-        showAlertMessage: false);
+        showAlertMessage: false,
+    mainScreenLoader: false);
   }
   VideoTranslateScreenState copyWith(
       {String? videoFilePath,
@@ -67,7 +70,9 @@ class VideoTranslateScreenState {
       final String? selectedLanguage,
       final String? transcriptedText,
       final String? translatedText,
-      final bool? showAlertMessage}) {
+      final bool? showAlertMessage,
+        final bool? mainScreenLoader
+      }) {
     return VideoTranslateScreenState(
         videoFilePath: videoFilePath ?? this.videoFilePath,
         audioFilePath: audioFilePath ?? this.audioFilePath,
@@ -87,6 +92,8 @@ class VideoTranslateScreenState {
         selectedLanguage: selectedLanguage ?? this.selectedLanguage,
         translatedText: translatedText ?? this.translatedText,
         transcriptedText: transcriptedText ?? this.transcriptedText,
-        showAlertMessage: showAlertMessage ?? this.showAlertMessage);
+        showAlertMessage: showAlertMessage ?? this.showAlertMessage,
+      mainScreenLoader: mainScreenLoader ?? this.mainScreenLoader,
+    );
   }
 }

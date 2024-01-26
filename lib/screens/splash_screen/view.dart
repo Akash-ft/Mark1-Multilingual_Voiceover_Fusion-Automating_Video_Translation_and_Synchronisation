@@ -17,6 +17,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor:Color(0xFF2F455C),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -34,17 +35,19 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                 const Text(
                   "MVF",
                   style: TextStyle(
-                      fontSize: 30,
+                      fontSize: 35,
                       fontFamily: "Quicksand",
-                      fontWeight: FontWeight.bold),
+                      fontWeight: FontWeight.w900,
+                    color: Colors.white
+                  ),
                 ),
                 SizedBox(height: 10),
                 const Text(
                   "Multilingual Voiceover Fusion",
                   style: TextStyle(
-                      fontSize: 20,
+                      fontSize: 25,
                       fontFamily: "Quicksand",
-                      fontWeight: FontWeight.w600),
+                      fontWeight: FontWeight.w700,color: Colors.white),
                 ),
               ],
             ),
@@ -58,16 +61,16 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                 Text(
                   "Developed by",
                   style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 20,
                       fontFamily: "Quicksand",
-                      fontWeight: FontWeight.w500),
+                      fontWeight: FontWeight.w600,color: Colors.white),
                 ),
                 Text(
                   "AKASH R",
                   style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 20,
                       fontFamily: "Quicksand",
-                      fontWeight: FontWeight.w500),
+                      fontWeight: FontWeight.w600,color: Colors.white),
                 ),
               ],
             ),

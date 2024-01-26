@@ -3,7 +3,6 @@ import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter/ffprobe_kit.dart';
 import 'package:ffmpeg_kit_flutter/return_code.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:path_provider/path_provider.dart';
 
 final FFmpegToolProvider = Provider((ref) => FFmpegTools());
 
@@ -12,11 +11,9 @@ class FFmpegTools {
   Future<String> extractAudioFromVideo(String videoFile) async {
     try {
       ReturnCode? returnCode;
-      String fileExtension = 'wav';
-      String fileName = 'outputAudio.$fileExtension';
-      String filePath = '/sdcard/Download/$fileName';
-      Directory appDocDir = await getApplicationDocumentsDirectory();
-      // '${appDocDir.path}/output.wav';
+      DateTime now = DateTime.now();
+      String timestamp = now.toIso8601String().replaceAll(RegExp(r'[:.]'), '_');
+      String filePath = '/sdcard/Download/outputAudio_$timestamp.wav';
       print("extracted path  ${filePath}");
       String command = '-i $videoFile -vn $filePath';
       final session = await FFmpegKit.execute(command);
@@ -40,8 +37,8 @@ class FFmpegTools {
   Future<double> getMediaDuration(String filePath) async {
     try {
       final mediaInfoSession = await FFprobeKit.getMediaInformation(filePath);
-      final mediaInfo = mediaInfoSession.getMediaInformation()!;
       await Future.delayed(Duration(seconds: 1));
+      final mediaInfo = mediaInfoSession.getMediaInformation()!;
       final duration = double.parse(mediaInfo.getDuration()!);
       print('Duration audio file: $duration');
       return duration;
@@ -54,7 +51,9 @@ class FFmpegTools {
   Future<String> removeAudioFromVideo(String videoFile) async {
     try {
       ReturnCode? returnCode;
-      String outputFilePath = '/sdcard/Download/outputVideo.mp4';
+      DateTime now = DateTime.now();
+      String timestamp = now.toIso8601String().replaceAll(RegExp(r'[:.]'), '_');
+      String outputFilePath = '/sdcard/Download/outputVideo_$timestamp.mp4';
       String command = '-i $videoFile -c copy -an $outputFilePath';
       final session = await FFmpegKit.execute(command);
       returnCode = await session.getReturnCode();
@@ -77,7 +76,9 @@ class FFmpegTools {
   Future<String> mergeAudioInVideo(String videoFile, String audioFilePath) async {
     try {
       ReturnCode? returnCode;
-      String outputFilePath = '/sdcard/Download/mergedVideo.mp4';
+      DateTime now = DateTime.now();
+      String timestamp = now.toIso8601String().replaceAll(RegExp(r'[:.]'), '_');
+      String outputFilePath = '/sdcard/Download/mergedVideo_$timestamp.mp4';
       String command =
           '-i $videoFile -i $audioFilePath -c:v copy -c:a aac -strict experimental -map 0:v:0 -map 1:a:0 $outputFilePath';
       final session = await FFmpegKit.execute(command);
@@ -101,7 +102,9 @@ class FFmpegTools {
   Future<String> adjustAudioSpeed(String audioFile, double playbackSpeed) async {
     try {
       ReturnCode? returnCode;
-      String outputFilePath = '/sdcard/Download/ajustAudioSpeed.wav';
+      DateTime now = DateTime.now();
+      String timestamp = now.toIso8601String().replaceAll(RegExp(r'[:.]'), '_');
+      String outputFilePath = '/sdcard/Download/adjustAudioSpeed_$timestamp.wav';
       double roundedValue = double.parse(playbackSpeed.toStringAsFixed(1));
       String command = '-i $audioFile -filter:a "atempo=$roundedValue" $outputFilePath';
 
@@ -123,6 +126,4 @@ class FFmpegTools {
       return '';
     }
   }
-
-
 }

@@ -86,6 +86,7 @@ class VideoTranslateScreenController
     print("video player initializes");
     final videoPlayerController = VideoPlayerController.file(file);
     await videoPlayerController.initialize();
+    await extractAudio();
     state = state.copyWith(
       videoFilePath: filePath,
       videoPlayerController: videoPlayerController,
@@ -111,11 +112,11 @@ class VideoTranslateScreenController
     if (state.audioFilePath != "") {
       state = state.copyWith(isLoadingTranscription: true);
       //COMMENTED FOR TESTING PURPOSE
-      // var transcriptedContent =
-      //  await transcriptAudio.transcribeAudio(state.audioFilePath!);
-      await Future.delayed(Duration(seconds: 1));
       var transcriptedContent =
-          "Excellence is never an accident. It is always the result of high intention, sincere effort, and intelligent execution. It represents the wise choice of many alternatives. Choice, not chance, determines your destiny.";
+       await transcriptAudio.transcribeAudio(state.audioFilePath!);
+      // await Future.delayed(Duration(seconds: 1));
+      // var transcriptedContent =
+      //     "Excellence is never an accident. It is always the result of high intention, sincere effort, and intelligent execution. It represents the wise choice of many alternatives. Choice, not chance, determines your destiny.";
       print("transcription ${transcriptedContent}");
       state = state.copyWith(
           transcriptedText: transcriptedContent, isLoadingTranscription: false);
@@ -131,8 +132,10 @@ class VideoTranslateScreenController
   Future<void> translation() async {
     if (state.transcriptedText != "" && state.selectedLanguage != "") {
       state = state.copyWith(isLoadingTranslation: true);
-      var translatedContent = await translateText.translateTextV1(
+      var translatedContent = await translateText.translateTextV2(
           state.transcriptedText!, state.selectedLanguage!);
+      // await Future.delayed(Duration(seconds: 1));
+      // var translatedContent = "சிறந்து விளங்குவது ஒருபோதும் விபத்து அல்ல. இது எப்போதும் உயர்ந்த எண்ணம், நேர்மையான முயற்சி மற்றும் புத்திசாலித்தனமான செயல்பாட்டின் விளைவாகும். இது பல மாற்றுகளின் புத்திசாலித்தனமான தேர்வைக் குறிக்கிறது. தேர்வு, வாய்ப்பு அல்ல, உங்கள் விதியை தீர்மானிக்கிறது";
       state = state.copyWith(
           translatedText: translatedContent, isLoadingTranslation: false);
     } else {
@@ -163,6 +166,7 @@ class VideoTranslateScreenController
   }
 
   Future<void> generateVoiceOverForVideo() async {
+    state= state.copyWith(mainScreenLoader: true);
     var muteVideoFilePath = "";
     var adjustedTranslatedAudioFile = "";
     if (state.translatedText != "" && state.selectedLanguage != "") {
@@ -171,6 +175,7 @@ class VideoTranslateScreenController
     } else {
       state = state.copyWith(
           showAlertMessage: true,
+          mainScreenLoader: false,
           message: state.translatedText == ""
               ? "Please upload/record video"
               : "Please select language",
@@ -182,6 +187,7 @@ class VideoTranslateScreenController
     } else {
       state = state.copyWith(
           showAlertMessage: true,
+          mainScreenLoader: false,
           message: "Please upload/record video",
           messageTitle: "Error-GenerateVoiceOverForVideo");
     }
@@ -194,6 +200,7 @@ class VideoTranslateScreenController
     } else {
       state = state.copyWith(
           showAlertMessage: true,
+          mainScreenLoader: false,
           message: "Something went wrong while adjust audio",
           messageTitle: "Error-GenerateVoiceOverForVideo");
     }
@@ -204,12 +211,14 @@ class VideoTranslateScreenController
         await initializeVideoPlayer(mergedVideoFile, enableSubtitle: true);
         state = state.copyWith(
             showAlertMessage: true,
+            mainScreenLoader: false,
             message: "Translated video is loaded in the player",
             messageTitle: "Success-GenerateVoiceOverForVideo");
       } else {
         print("Mereged video file path is missing");
         state = state.copyWith(
             showAlertMessage: true,
+            mainScreenLoader: false,
             message: "Failed to Generate Voice Over",
             messageTitle: "Error-GenerateVoiceOverForVideo");
       }
@@ -218,6 +227,7 @@ class VideoTranslateScreenController
           "file path is missing for muteVideoFilePath or translatedAudioFilePath");
       state = state.copyWith(
           showAlertMessage: true,
+          mainScreenLoader: false,
           message: "Something went wrong in Translated Audio File",
           messageTitle: "Error-GenerateVoiceOverForVideo");
     }
@@ -226,7 +236,7 @@ class VideoTranslateScreenController
   double calculatePlaybackSpeed(
       double videoDuration, double translatedAudioDuration) {
     double value = 1 / (videoDuration / translatedAudioDuration);
-    return value;
+    return value==0.0?1.0:value;
   }
 
   Future<void> setLanguage(String languageCode) async {

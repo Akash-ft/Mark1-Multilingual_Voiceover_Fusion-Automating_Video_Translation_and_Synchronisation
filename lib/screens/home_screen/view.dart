@@ -14,11 +14,11 @@ class HomeScreen extends ConsumerWidget {
     final state = ref.watch(homeSProvider);
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: Color(0xFF2F455C),
         centerTitle: true,
         title: Text(
           'MVF',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: Colors.white,fontFamily: "Quicksand",fontWeight: FontWeight.w700),
         ),
       ),
       body: IndexedStack(
@@ -29,15 +29,18 @@ class HomeScreen extends ConsumerWidget {
         ],
       ),
       bottomNavigationBar:  BottomNavigationBar(
+        backgroundColor: Color(0xFF2F455C),
           currentIndex: state.tabIndex!,
           items: const <BottomNavigationBarItem>[
             BottomNavigationBarItem(
-                icon: Icon(Icons.switch_video_outlined, size: 30),
+                icon: Icon(Icons.switch_video_outlined, size: 40),
                 label: 'Media'),
             BottomNavigationBarItem(
-                icon: Icon(Icons.record_voice_over_outlined, size: 30),
+                icon: Icon(Icons.record_voice_over_outlined, size: 40),
                 label: 'Voice'),
           ],
+          selectedItemColor:Color(0xFF21D0B2) ,
+          unselectedItemColor: Colors.white,
           onTap: (value) {
             ref.read(homeSProvider.notifier).switchTab(value);
           },

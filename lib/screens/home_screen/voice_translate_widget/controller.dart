@@ -31,7 +31,9 @@ class VoiceTranslateScreenController
   VoiceRecorder voiceRecord;
 
   void audioRecording(int status) async {
-    String file = '/sdcard/Download/audio_recording.wav';
+    DateTime now = DateTime.now();
+    String timestamp = now.toIso8601String().replaceAll(RegExp(r'[:.]'), '_');
+    String file = '/sdcard/Download/audioRecording_$timestamp.wav';
     if (status == recordingStateValues[RecordingState.Start]) {
       state = state.copyWith(isRecording: true);
       voiceRecord.startRecording(file);
@@ -88,6 +90,7 @@ class VoiceTranslateScreenController
   }
 
   Future<void> saveSpeechAsAudioFile(String text, String langCode) async {
+    state = state.copyWith(mainScreenLoader: true);
     var translatedAudioFile =
         await text2speech.saveSpeechToFile(text, langCode);
     if (translatedAudioFile != "") {
@@ -95,12 +98,14 @@ class VoiceTranslateScreenController
       await initializeAudioPlayer(translatedAudioFile);
       state = state.copyWith(
           showAlertMessage: true,
+          mainScreenLoader: false,
           message: "Translated audio is loaded in the player",
           messageTitle: "Success-GenerateVoiceOverForAudio");
     } else {
       print("Translated Audio file path is missing for transcription");
       state = state.copyWith(
           showAlertMessage: true,
+          mainScreenLoader: false,
           message: "Failed to save the Speech file",
           messageTitle: "Error-SaveSpeechAsAudioFile");
     }
@@ -109,7 +114,7 @@ class VoiceTranslateScreenController
   Future<void> translation() async {
     if (state.transcriptedText != "" && state.selectedLanguage != "") {
       state = state.copyWith(isLoadingTranslation: true);
-      var translatedContent = await translateText.translateTextV1(
+      var translatedContent = await translateText.translateTextV2(
           state.transcriptedText!, state.selectedLanguage!);
       state = state.copyWith(
           translatedText: translatedContent, isLoadingTranslation: false);
@@ -140,4 +145,5 @@ class VoiceTranslateScreenController
   void hideAlertMessage() {
     state = state.copyWith(showAlertMessage: false);
   }
+
 }
