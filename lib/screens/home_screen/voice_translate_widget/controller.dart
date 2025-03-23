@@ -79,7 +79,7 @@ class VoiceTranslateScreenController
       //     "Excellence is never an accident. It is always the result of high intention, sincere effort, and intelligent execution. It represents the wise choice of many alternatives. Choice, not chance, determines your destiny.";
       print("transcription ${transcriptedContent}");
       state = state.copyWith(
-          transcriptedText: transcriptedContent, isLoadingTranscription: false);
+          transcriptedResult: transcriptedContent, isLoadingTranscription: false);
     } else {
       print("Audio file path is missing for transcription");
       state = state.copyWith(
@@ -112,10 +112,10 @@ class VoiceTranslateScreenController
   }
 
   Future<void> translation() async {
-    if (state.transcriptedText != "" && state.selectedLanguage != "") {
+    if (state.transcriptedResult != null && state.selectedLanguage != "") {
       state = state.copyWith(isLoadingTranslation: true);
-      var translatedContent = await translateText.translateTextV2(
-          state.transcriptedText!, state.selectedLanguage!);
+      var translatedContent = await translateText.translateTextV1(
+          state.transcriptedResult!.transcript, state.selectedLanguage!);
       state = state.copyWith(
           translatedText: translatedContent, isLoadingTranslation: false);
     } else {

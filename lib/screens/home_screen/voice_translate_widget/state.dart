@@ -1,5 +1,7 @@
 import 'package:chewie_audio/chewie_audio.dart';
 import 'package:video_player/video_player.dart';
+import '../../../modules/transcribe_audio/model/transcription_result.dart';
+
 
 class VoiceTranslateScreenState {
   final String? audioFilePath;
@@ -13,7 +15,7 @@ class VoiceTranslateScreenState {
   final String? message;
   final int? tabIndex;
   final String? selectedLanguage;
-  final String? transcriptedText;
+  final TranscriptionResult? transcriptedResult;
   final String? translatedText;
   final bool? showAlertMessage;
   final bool? mainScreenLoader;
@@ -30,7 +32,7 @@ class VoiceTranslateScreenState {
     this.isRecording,
     this.tabIndex,
     this.selectedLanguage,
-    this.transcriptedText,
+    this.transcriptedResult, // ✅ Updated
     this.translatedText,
     this.showAlertMessage,
     this.mainScreenLoader,
@@ -49,7 +51,7 @@ class VoiceTranslateScreenState {
       isRecording: false,
       tabIndex: 0,
       selectedLanguage: "",
-      transcriptedText: "",
+      transcriptedResult: null, // ✅ Updated as null initially
       translatedText: "",
       showAlertMessage: false,
       mainScreenLoader: false,
@@ -61,36 +63,36 @@ class VoiceTranslateScreenState {
     String? translatedAudioFilePath,
     VideoPlayerController? videoPlayerController,
     ChewieAudioController? chewieAudioController,
-    final bool? isLoadingTranscription,
-    final bool? isLoadingTranslation,
-    final bool? isRecording,
-    final String? messageTitle,
-    final String? message,
-    final int? tabIndex,
-    final String? selectedLanguage,
-    final String? transcriptedText,
-    final String? translatedText,
-    final bool? showAlertMessage,
-    final bool? mainScreenLoader,
+    bool? isLoadingTranscription,
+    bool? isLoadingTranslation,
+    bool? isRecording,
+    String? messageTitle,
+    String? message,
+    int? tabIndex,
+    String? selectedLanguage,
+    TranscriptionResult? transcriptedResult,
+    String? translatedText,
+    bool? showAlertMessage,
+    bool? mainScreenLoader,
   }) {
     return VoiceTranslateScreenState(
       audioFilePath: audioFilePath ?? this.audioFilePath,
       translatedAudioFilePath:
-          translatedAudioFilePath ?? this.translatedAudioFilePath,
+      translatedAudioFilePath ?? this.translatedAudioFilePath,
       videoPlayerController:
-          videoPlayerController ?? this.videoPlayerController,
+      videoPlayerController ?? this.videoPlayerController,
       chewieAudioController:
-          chewieAudioController ?? this.chewieAudioController,
+      chewieAudioController ?? this.chewieAudioController,
       message: message ?? this.message,
       messageTitle: messageTitle ?? this.messageTitle,
       isLoadingTranscription:
-          isLoadingTranscription ?? this.isLoadingTranscription,
+      isLoadingTranscription ?? this.isLoadingTranscription,
       isLoadingTranslation: isLoadingTranslation ?? this.isLoadingTranslation,
       isRecording: isRecording ?? this.isRecording,
       tabIndex: tabIndex ?? this.tabIndex,
       selectedLanguage: selectedLanguage ?? this.selectedLanguage,
+      transcriptedResult: transcriptedResult ?? this.transcriptedResult,
       translatedText: translatedText ?? this.translatedText,
-      transcriptedText: transcriptedText ?? this.transcriptedText,
       showAlertMessage: showAlertMessage ?? this.showAlertMessage,
       mainScreenLoader: mainScreenLoader ?? this.mainScreenLoader,
     );

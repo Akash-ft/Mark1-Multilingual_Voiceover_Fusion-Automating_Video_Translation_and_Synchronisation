@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:translator/translator.dart';
-
 import '../../app_settings/app_key.dart';
 
 final translateTextProvider = Provider((ref) => TranslateText());

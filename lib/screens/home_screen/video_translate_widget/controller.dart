@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:MVF/screens/home_screen/video_translate_widget/state.dart';
 import 'package:chewie/chewie.dart';
@@ -86,7 +87,6 @@ class VideoTranslateScreenController
     print("video player initializes");
     final videoPlayerController = VideoPlayerController.file(file);
     await videoPlayerController.initialize();
-    await extractAudio();
     state = state.copyWith(
       videoFilePath: filePath,
       videoPlayerController: videoPlayerController,
@@ -113,13 +113,13 @@ class VideoTranslateScreenController
       state = state.copyWith(isLoadingTranscription: true);
       //COMMENTED FOR TESTING PURPOSE
       var transcriptedContent =
-       await transcriptAudio.transcribeAudio(state.audioFilePath!);
+       await transcriptAudio.transcribeAudioV1(state.audioFilePath!);
       // await Future.delayed(Duration(seconds: 1));
       // var transcriptedContent =
       //     "Excellence is never an accident. It is always the result of high intention, sincere effort, and intelligent execution. It represents the wise choice of many alternatives. Choice, not chance, determines your destiny.";
-      print("transcription ${transcriptedContent}");
+      print("transcription ${transcriptedContent.toString()}");
       state = state.copyWith(
-          transcriptedText: transcriptedContent, isLoadingTranscription: false);
+          transcriptedResult: transcriptedContent, isLoadingTranscription: false);
     } else {
       print("Audio file path is missing for transcription");
       state = state.copyWith(
@@ -130,10 +130,10 @@ class VideoTranslateScreenController
   }
 
   Future<void> translation() async {
-    if (state.transcriptedText != "" && state.selectedLanguage != "") {
+    if (state.transcriptedResult != null && state.selectedLanguage != "") {
       state = state.copyWith(isLoadingTranslation: true);
-      var translatedContent = await translateText.translateTextV2(
-          state.transcriptedText!, state.selectedLanguage!);
+      var translatedContent = await translateText.translateTextV1(
+          state.transcriptedResult!.transcript, state.selectedLanguage!);
       // await Future.delayed(Duration(seconds: 1));
       // var translatedContent = "சிறந்து விளங்குவது ஒருபோதும் விபத்து அல்ல. இது எப்போதும் உயர்ந்த எண்ணம், நேர்மையான முயற்சி மற்றும் புத்திசாலித்தனமான செயல்பாட்டின் விளைவாகும். இது பல மாற்றுகளின் புத்திசாலித்தனமான தேர்வைக் குறிக்கிறது. தேர்வு, வாய்ப்பு அல்ல, உங்கள் விதியை தீர்மானிக்கிறது";
       state = state.copyWith(
@@ -236,7 +236,8 @@ class VideoTranslateScreenController
   double calculatePlaybackSpeed(
       double videoDuration, double translatedAudioDuration) {
     double value = 1 / (videoDuration / translatedAudioDuration);
-    return value==0.0?1.0:value;
+    double adjustedValue = max(0.5, min(value, 2.0));
+    return adjustedValue.isNaN || adjustedValue == 0.0 ? 1.0 : adjustedValue;
   }
 
   Future<void> setLanguage(String languageCode) async {

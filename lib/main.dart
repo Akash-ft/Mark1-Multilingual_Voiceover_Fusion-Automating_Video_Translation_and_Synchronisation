@@ -1,10 +1,16 @@
 
+import 'package:MVF/app_settings/app_key.dart';
 import 'package:MVF/utils/router/go_router_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Supabase.initialize(
+    url: Token().supaBaseUrl,
+    anonKey: Token().supaBaseApiKey,
+  );
   runApp(ProviderScope(child: MyApp()));
 }
 
